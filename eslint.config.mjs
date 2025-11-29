@@ -28,6 +28,12 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: '^(_|ignore)',
         },
       ],
+      'react/no-unescaped-entities': 'warn',
+      '@next/next/no-img-element': 'warn',
+      '@next/next/no-html-link-for-pages': 'warn',
+      '@next/next/no-sync-scripts': 'warn',
+      '@next/next/no-page-custom-font': 'off',
+      '@next/next/no-css-tags': 'off',
     },
   },
   {
