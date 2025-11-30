@@ -40,8 +40,6 @@ next-env.d.ts
 
 .env
 
-/media
-
 # Markdown files
 *.md
 
