@@ -42,6 +42,9 @@ next-env.d.ts
 
 /media
 
+# Markdown files
+*.md
+
 # Playwright
 node_modules/
 /test-results/

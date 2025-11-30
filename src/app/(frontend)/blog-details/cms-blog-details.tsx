@@ -6,7 +6,11 @@ import Image from 'next/image'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
-export default function CMSBlogDetailsPage() {
+interface CMSBlogDetailsPageProps {
+  slug?: string
+}
+
+export default function CMSBlogDetailsPage({ slug }: CMSBlogDetailsPageProps) {
   const [pageData, setPageData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -15,8 +19,18 @@ export default function CMSBlogDetailsPage() {
     async function fetchData() {
       try {
         const response = await fetch('/api/blog-details')
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
         const data = await response.json()
-        setPageData(data)
+        
+        // Check if data is valid (not empty object or array)
+        if (!data || (Array.isArray(data) && data.length === 0) || (typeof data === 'object' && Object.keys(data).length === 0)) {
+          console.warn('Blog details page: No content configured')
+          setPageData(null)
+        } else {
+          setPageData(data)
+        }
       } catch (err) {
         console.error('Failed to fetch blog details page data:', err)
         setError('Failed to load page content')
