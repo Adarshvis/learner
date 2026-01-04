@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
@@ -12,15 +13,77 @@ interface InstructorProfileProps {
 }
 
 export default function InstructorProfilePage({ params }: InstructorProfileProps) {
+  const [slug, setSlug] = useState<string>('')
+  const [instructor, setInstructor] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-    // Initialize AOS after component mounts
-    AOS.init({
-      duration: 600,
-      easing: 'ease-in-out',
-      once: true,
-      mirror: false
-    })
-  }, [])
+    params.then((p) => setSlug(p.slug))
+  }, [params])
+
+  useEffect(() => {
+    if (!slug) return
+
+    async function fetchInstructor() {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        const res = await fetch(`${baseUrl}/api/instructors-page?where[slug][equals]=${slug}`)
+        
+        if (!res.ok) {
+          setInstructor(null)
+          setLoading(false)
+          return
+        }
+        
+        const data = await res.json()
+        if (data.docs && data.docs.length > 0) {
+          setInstructor(data.docs[0])
+        } else {
+          setInstructor(null)
+        }
+      } catch (error) {
+        setInstructor(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchInstructor()
+  }, [slug])
+
+  useEffect(() => {
+    if (!loading) {
+      // Initialize AOS after component mounts
+      AOS.init({
+        duration: 600,
+        easing: 'ease-in-out',
+        once: true,
+        mirror: false
+      })
+    }
+  }, [loading])
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!instructor) {
+    return (
+      <div className="container py-5">
+        <div className="text-center">
+          <h2>Instructor Not Found</h2>
+          <p>The instructor profile you're looking for doesn't exist.</p>
+          <Link href="/instructors" className="btn btn-primary">Back to Instructors</Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -50,29 +113,32 @@ export default function InstructorProfilePage({ params }: InstructorProfileProps
                 </div>
                 <div className="hero-content">
                   <div className="instructor-avatar">
-                    <img src="/assets/img/education/teacher-7.webp" alt="Instructor" className="img-fluid" />
+                    <img 
+                      src={instructor.image?.url || '/assets/img/education/teacher-7.webp'} 
+                      alt={instructor.name || 'Instructor'} 
+                      className="img-fluid" 
+                    />
                     <div className="status-badge">
                       <i className="bi bi-patch-check-fill"></i>
                       <span>Verified</span>
                     </div>
                   </div>
                   <div className="instructor-info">
-                    <h2>Prof. Alexandra Chen</h2>
-                    <p className="title">Machine Learning & AI Specialist</p>
+                    <h2>{instructor.name || 'Instructor Name'}</h2>
+                    <p className="title">{instructor.specialty || 'Specialist'}</p>
                     <div className="credentials">
-                      <span className="credential">Ph.D. MIT</span>
-                      <span className="credential">10+ Years</span>
-                      <span className="credential">15,247 Students</span>
+                      <span className="credential">{instructor.studentCount || 0} Students</span>
+                      <span className="credential">{instructor.courseCount || 0} Courses</span>
+                      <span className="credential">{instructor.rating || 5} Rating</span>
                     </div>
                     <div className="rating-overview">
                       <div className="stars">
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-fill"></i>
-                        <i className="bi bi-star-half"></i>
+                        {Array.from({ length: Math.floor(instructor.rating || 5) }, (_, i) => (
+                          <i key={i} className="bi bi-star-fill"></i>
+                        ))}
+                        {(instructor.rating || 5) % 1 !== 0 && <i className="bi bi-star-half"></i>}
                       </div>
-                      <span className="rating-text">4.9 rating from 3,821 reviews</span>
+                      <span className="rating-text">{instructor.rating || 5} rating</span>
                     </div>
                     <div className="contact-actions">
                       <a href="#" className="btn-contact">
@@ -80,9 +146,11 @@ export default function InstructorProfilePage({ params }: InstructorProfileProps
                         Contact Instructor
                       </a>
                       <div className="social-media">
-                        <a href="#"><i className="bi bi-linkedin"></i></a>
-                        <a href="#"><i className="bi bi-twitter-x"></i></a>
-                        <a href="#"><i className="bi bi-youtube"></i></a>
+                        {instructor.socialLinks?.map((social: any, idx: number) => (
+                          <a key={idx} href={social.url} target="_blank" rel="noopener noreferrer">
+                            <i className={`bi bi-${social.platform}`}></i>
+                          </a>
+                        ))}
                       </div>
                     </div>
                   </div>

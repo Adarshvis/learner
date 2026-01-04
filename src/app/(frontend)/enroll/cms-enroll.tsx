@@ -28,7 +28,7 @@ export default function CMSEnrollPage() {
         const data = await response.json()
         setPageData(data)
       } catch (err) {
-        console.error('Failed to fetch enroll page data:', err)
+        // Silently handle error
         setError('Failed to load page content')
       } finally {
         setLoading(false)

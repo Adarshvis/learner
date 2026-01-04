@@ -87,26 +87,6 @@ export default function TestimonialsSlider({ testimonials }: TestimonialsSliderP
           </div>
         )}
       </div>
-
-      {/* Rating Summary Card - Centered Below */}
-      <div className="text-center mt-5" data-aos="fade-up" data-aos-delay="500">
-        <div className="overall-rating">
-          <div className="rating-number">4.8</div>
-          <div className="rating-stars">
-            <i className="bi bi-star-fill"></i>
-            <i className="bi bi-star-fill"></i>
-            <i className="bi bi-star-fill"></i>
-            <i className="bi bi-star-fill"></i>
-            <i className="bi bi-star-half"></i>
-          </div>
-          <p>Based on 2100+ reviews</p>
-          <div className="rating-platforms">
-            <span>Goodreads</span>
-            <span>Amazon</span>
-            <span>Barnes & Noble</span>
-          </div>
-        </div>
-      </div>
     </>
   )
 }

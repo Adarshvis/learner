@@ -135,7 +135,7 @@ export default async function CMSPricingPage() {
       </>
     )
   } catch (error) {
-    console.error('Error fetching pricing page content:', error)
+    // Return empty sections on error
     return (
       <div className="container py-5">
         <div className="text-center">

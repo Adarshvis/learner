@@ -2,45 +2,108 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { notFound } from 'next/navigation'
+import { lexicalToHtml } from '@/lib/lexicalToHtml'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
+interface BlogPost {
+  id: string
+  title: string
+  slug: string
+  shortDescription: string
+  featuredImage: {
+    url: string
+    alt?: string
+  }
+  authorType: 'manual' | 'instructor'
+  authorName?: string
+  authorImage?: {
+    url: string
+  }
+  authorRole?: string
+  authorBio?: string
+  instructor?: {
+    id: string
+    name: string
+    image?: {
+      url: string
+    }
+    specialty?: string
+  }
+  content: any
+  publishedDate: string
+  readTime?: string
+  category?: string
+  tags?: Array<{ tag: string }>
+}
+
 interface CMSBlogDetailsPageProps {
-  slug?: string
+  slug: string
+}
+
+function CategoryBadge({ category }: { category: string }) {
+  const getCategoryLabel = (cat: string) => {
+    const categories: Record<string, string> = {
+      'web-development': 'Web Development',
+      'data-science': 'Data Science',
+      'design': 'Design',
+      'marketing': 'Marketing',
+      'business': 'Business',
+      'general': 'General'
+    }
+    return categories[cat] || cat
+  }
+
+  return <a href={`/blog?category=${category}`} className="category">{getCategoryLabel(category)}</a>
 }
 
 export default function CMSBlogDetailsPage({ slug }: CMSBlogDetailsPageProps) {
-  const [pageData, setPageData] = useState<any>(null)
+  const [post, setPost] = useState<BlogPost | null>(null)
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('/api/blog-details')
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data = await response.json()
+        const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
         
-        // Check if data is valid (not empty object or array)
-        if (!data || (Array.isArray(data) && data.length === 0) || (typeof data === 'object' && Object.keys(data).length === 0)) {
-          console.warn('Blog details page: No content configured')
-          setPageData(null)
-        } else {
-          setPageData(data)
+        const res = await fetch(`${baseUrl}/api/blog-posts?where[slug][equals]=${slug}&where[status][equals]=published`)
+        
+        if (!res.ok) {
+          setLoading(false)
+          return
         }
-      } catch (err) {
-        console.error('Failed to fetch blog details page data:', err)
-        setError('Failed to load page content')
+        
+        const data = await res.json()
+        
+        if (!data.docs || data.docs.length === 0) {
+          setLoading(false)
+          return
+        }
+        
+        const postData = data.docs[0]
+        setPost(postData)
+        
+        // Fetch related posts
+        if (postData.category) {
+          const relatedRes = await fetch(
+            `${baseUrl}/api/blog-posts?where[category][equals]=${postData.category}&where[slug][not_equals]=${slug}&where[status][equals]=published&limit=3`
+          )
+          if (relatedRes.ok) {
+            const relatedData = await relatedRes.json()
+            setRelatedPosts(relatedData.docs || [])
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching blog post:', error)
       } finally {
         setLoading(false)
       }
     }
-
+    
     fetchData()
-  }, [])
+  }, [slug])
 
   useEffect(() => {
     if (!loading) {
@@ -55,194 +118,246 @@ export default function CMSBlogDetailsPage({ slug }: CMSBlogDetailsPageProps) {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-        <div className="spinner-border" role="status">
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+        <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
       </div>
     )
   }
 
-  if (error || !pageData) {
-    return (
-      <div className="container text-center py-5">
-        <div className="alert alert-warning">
-          <h4>Content Management System</h4>
-          <p>Blog details page content is not configured yet.</p>
-          <p>Please set up the content in the admin panel:</p>
-          <Link href="/admin" className="btn btn-primary">
-            Go to Admin Panel
-          </Link>
-        </div>
-      </div>
-    )
+  if (!post) {
+    notFound()
   }
 
-  const { article, relatedPosts, comments, author } = pageData || {}
+  const authorName = post.authorType === 'instructor' ? post.instructor?.name : post.authorName
+  const authorImageUrl = post.authorType === 'instructor' ? post.instructor?.image?.url : post.authorImage?.url
+  const authorRole = post.authorType === 'instructor' ? post.instructor?.specialty : post.authorRole
+
+  const formattedDate = new Date(post.publishedDate).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+
+  const contentHtml = lexicalToHtml(post.content)
 
   return (
     <>
       {/* Page Title */}
-      <section id="page-title" className="page-title">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-12" data-aos="fade-up">
-              <h1 className="page-title">{article?.title || 'Blog Article'}</h1>
-              <nav aria-label="breadcrumb">
-                <ol className="breadcrumb">
-                  <li className="breadcrumb-item"><Link href="/">Home</Link></li>
-                  <li className="breadcrumb-item"><Link href="/blog">Blog</Link></li>
-                  <li className="breadcrumb-item active" aria-current="page">Article</li>
-                </ol>
-              </nav>
-            </div>
-          </div>
+      <div className="page-title light-background">
+        <div className="container d-lg-flex justify-content-between align-items-center">
+          <h1 className="mb-2 mb-lg-0">Blog Details</h1>
+          <nav className="breadcrumbs">
+            <ol>
+              <li><Link href="/">Home</Link></li>
+              <li><Link href="/blog">Blog</Link></li>
+              <li className="current">{post.title}</li>
+            </ol>
+          </nav>
         </div>
-      </section>
+      </div>
 
-      {/* Blog Details */}
-      <section id="blog-details" className="section-padding">
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-8">
-              <div className="blog-details-content">
-                {/* Article Header */}
-                <div className="article-header" data-aos="fade-up">
-                  <div className="article-meta">
-                    <span className="date">
-                      <i className="bi bi-calendar"></i>
-                      {article?.publishDate ? new Date(article.publishDate).toLocaleDateString() : 'Date not set'}
-                    </span>
-                    <span className="category">
-                      <i className="bi bi-folder"></i>
-                      {article?.category || 'General'}
-                    </span>
-                    <span className="author">
-                      <i className="bi bi-person"></i>
-                      {author?.name || article?.author || 'Anonymous'}
-                    </span>
-                  </div>
-                  <h1 className="article-title">{article?.title}</h1>
-                  {article?.excerpt && (
-                    <p className="article-excerpt">{article.excerpt}</p>
-                  )}
+      {/* Blog Details Section */}
+      <section id="blog-details" className="blog-details section">
+        <div className="container" data-aos="fade-up">
+          <article className="article">
+            {/* Article Header */}
+            <div className="article-header">
+              {post.category && (
+                <div className="meta-categories" data-aos="fade-up">
+                  <CategoryBadge category={post.category} />
                 </div>
+              )}
 
-                {/* Featured Image */}
-                {article?.featuredImage && (
-                  <div className="article-image" data-aos="fade-up">
-                    <Image
-                      src={article.featuredImage.url}
-                      alt={article.featuredImage.alt || article.title}
-                      width={800}
-                      height={400}
-                      className="img-fluid rounded"
-                    />
-                  </div>
-                )}
+              <h1 className="title" data-aos="fade-up" data-aos-delay="100">
+                {post.title}
+              </h1>
 
-                {/* Article Content */}
-                <div className="article-body" data-aos="fade-up">
-                  {article?.content ? (
-                    <div dangerouslySetInnerHTML={{ __html: article.content }} />
-                  ) : (
-                    <div className="placeholder-content">
-                      <p>Article content will be displayed here once configured in the admin panel.</p>
-                      <p>You can add rich text content, images, videos, and more through the CMS.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tags */}
-                {article?.tags && article.tags.length > 0 && (
-                  <div className="article-tags" data-aos="fade-up">
-                    <h6>Tags:</h6>
-                    <div className="tags-list">
-                      {article.tags.map((tag: string, index: number) => (
-                        <span key={index} className="tag">{tag}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Social Share */}
-                <div className="article-share" data-aos="fade-up">
-                  <h6>Share this article:</h6>
-                  <div className="share-buttons">
-                    <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article?.title || '')}&url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">
-                      <i className="bi bi-twitter"></i>
-                    </a>
-                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">
-                      <i className="bi bi-facebook"></i>
-                    </a>
-                    <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer">
-                      <i className="bi bi-linkedin"></i>
-                    </a>
-                  </div>
-                </div>
-
-                {/* Author Bio */}
-                {author && (
-                  <div className="author-bio" data-aos="fade-up">
-                    <div className="author-info">
-                      <Image
-                        src={author.avatar?.url || '/assets/img/person/default-avatar.jpg'}
-                        alt={author.name}
-                        width={80}
-                        height={80}
-                        className="author-avatar"
+              <div className="article-meta" data-aos="fade-up" data-aos-delay="200">
+                {authorName && (
+                  <div className="author">
+                    {authorImageUrl && (
+                      <img 
+                        src={authorImageUrl} 
+                        alt={authorName} 
+                        className="author-img" 
                       />
-                      <div className="author-details">
-                        <h6>{author.name}</h6>
-                        <p className="author-title">{author.title}</p>
-                        <p className="author-description">{author.bio}</p>
+                    )}
+                    <div className="author-info">
+                      <h4>{authorName}</h4>
+                      {authorRole && <span>{authorRole}</span>}
+                    </div>
+                  </div>
+                )}
+                <div className="post-info">
+                  <span>
+                    <i className="bi bi-calendar4-week"></i> {formattedDate}
+                  </span>
+                  {post.readTime && (
+                    <span>
+                      <i className="bi bi-clock"></i> {post.readTime}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Featured Image */}
+            {post.featuredImage?.url && (
+              <div className="article-featured-image" data-aos="zoom-in">
+                <img 
+                  src={post.featuredImage.url} 
+                  alt={post.title} 
+                  className="img-fluid"
+                  style={{ maxHeight: '500px', width: 'auto', display: 'block', margin: '0 auto' }}
+                />
+              </div>
+            )}
+
+            {/* Article Wrapper */}
+            <div className="article-wrapper">
+              {/* Table of Contents - Optional Sidebar */}
+              <aside className="table-of-contents" data-aos="fade-left">
+                <h3>Table of Contents</h3>
+                <nav>
+                  <ul>
+                    <li><a href="#content" className="active">Article Content</a></li>
+                  </ul>
+                </nav>
+              </aside>
+
+              {/* Article Content */}
+              <div className="article-content">
+                <div 
+                  id="content"
+                  className="content-section" 
+                  data-aos="fade-up"
+                  dangerouslySetInnerHTML={{ __html: contentHtml }} 
+                />
+              </div>
+            </div>
+
+            {/* Article Footer */}
+            <div className="article-footer" data-aos="fade-up">
+              {/* Share Buttons */}
+              <div className="share-article">
+                <h4>Share this article</h4>
+                <div className="share-buttons">
+                  <a 
+                    href={`https://twitter.com/intent/tweet?url=${typeof window !== 'undefined' ? encodeURIComponent(window.location.href) : ''}&text=${encodeURIComponent(post.title)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="share-button twitter"
+                  >
+                    <i className="bi bi-twitter-x"></i>
+                    <span>Share on X</span>
+                  </a>
+                  <a 
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${typeof window !== 'undefined' ? encodeURIComponent(window.location.href) : ''}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="share-button facebook"
+                  >
+                    <i className="bi bi-facebook"></i>
+                    <span>Share on Facebook</span>
+                  </a>
+                  <a 
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${typeof window !== 'undefined' ? encodeURIComponent(window.location.href) : ''}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="share-button linkedin"
+                  >
+                    <i className="bi bi-linkedin"></i>
+                    <span>Share on LinkedIn</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Tags */}
+              {post.tags && post.tags.length > 0 && (
+                <div className="article-tags">
+                  <h4>Related Topics</h4>
+                  <div className="tags">
+                    {post.tags.map((tagObj, index) => (
+                      <a key={index} href="#" className="tag">
+                        {tagObj.tag}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </article>
+
+          {/* Author Bio */}
+          {post.authorBio && authorName && (
+            <div className="author-bio-section mt-5" data-aos="fade-up">
+              <div className="author-bio-card">
+                {authorImageUrl && (
+                  <div className="author-avatar">
+                    <img src={authorImageUrl} alt={authorName} />
+                  </div>
+                )}
+                <div className="author-details">
+                  <h4>About {authorName}</h4>
+                  {authorRole && <p className="author-title">{authorRole}</p>}
+                  <p className="author-description">{post.authorBio}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Related Posts */}
+          {relatedPosts && relatedPosts.length > 0 && (
+            <div className="related-posts-section mt-5" data-aos="fade-up">
+              <h3 className="section-title mb-4">Related Articles</h3>
+              <div className="row gy-4">
+                {relatedPosts.map((relatedPost) => (
+                  <div key={relatedPost.id} className="col-lg-4 col-md-6">
+                    <div className="post-card h-100">
+                      {relatedPost.featuredImage?.url && (
+                        <div className="post-img">
+                          <Link href={`/blog-details/${relatedPost.slug}`}>
+                            <img 
+                              src={relatedPost.featuredImage.url} 
+                              alt={relatedPost.title} 
+                              className="img-fluid" 
+                            />
+                          </Link>
+                        </div>
+                      )}
+                      <div className="post-content p-3">
+                        {relatedPost.category && (
+                          <div className="post-category mb-2">
+                            <CategoryBadge category={relatedPost.category} />
+                          </div>
+                        )}
+                        <h4 className="mb-3">
+                          <Link href={`/blog-details/${relatedPost.slug}`} className="text-decoration-none">
+                            {relatedPost.title}
+                          </Link>
+                        </h4>
+                        <p className="mb-3">{relatedPost.shortDescription}</p>
+                        <div className="post-meta d-flex gap-3 text-muted small">
+                          <span>
+                            <i className="bi bi-calendar me-1"></i>
+                            {new Date(relatedPost.publishedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          {relatedPost.readTime && (
+                            <span>
+                              <i className="bi bi-clock me-1"></i>
+                              {relatedPost.readTime}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                )}
+                ))}
               </div>
             </div>
-
-            {/* Sidebar */}
-            <div className="col-lg-4">
-              <div className="blog-sidebar">
-                {/* Recent Posts */}
-                {relatedPosts && relatedPosts.length > 0 && (
-                  <div className="sidebar-widget" data-aos="fade-up">
-                    <h5 className="widget-title">Related Posts</h5>
-                    <div className="recent-posts">
-                      {relatedPosts.map((post: any, index: number) => (
-                        <div key={index} className="recent-post-item">
-                          <Image
-                            src={post.image?.url || '/assets/img/blog/default-post.jpg'}
-                            alt={post.title}
-                            width={80}
-                            height={60}
-                            className="post-thumb"
-                          />
-                          <div className="post-info">
-                            <h6><Link href={`/blog-details/${post.slug}`}>{post.title}</Link></h6>
-                            <span className="post-date">{new Date(post.date).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Categories */}
-                <div className="sidebar-widget" data-aos="fade-up">
-                  <h5 className="widget-title">Categories</h5>
-                  <ul className="category-list">
-                    <li><Link href="/blog?category=web-development">Web Development</Link></li>
-                    <li><Link href="/blog?category=data-science">Data Science</Link></li>
-                    <li><Link href="/blog?category=design">Design</Link></li>
-                    <li><Link href="/blog?category=marketing">Digital Marketing</Link></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </>

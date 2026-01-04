@@ -1,161 +1,138 @@
-'use client'
-
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
-import AOS from 'aos'
-import 'aos/dist/aos.css'
 
-interface BlogPageData {
+interface BlogPost {
   id: string
-  sectionName: string
-  sectionType: string
-  status: string
-  pageTitle?: {
-    title: string
-    breadcrumbs?: Array<{
-      label: string
-      link?: string
-      isActive: boolean
-    }>
+  title: string
+  slug: string
+  shortDescription: string
+  featuredImage: {
+    url: string
+    alt?: string
   }
-  blogHero?: {
-    posts: Array<{
-      image: { url: string; alt: string }
-      date: string
-      category: string
-      title: string
-      link: string
-    }>
+  authorType: 'manual' | 'instructor'
+  authorName?: string
+  authorImage?: {
+    url: string
   }
-  blogPosts?: {
-    posts: Array<{
-      image: { url: string; alt: string }
-      date: {
-        day: number
-        month: string
-      }
-      author: string
-      category: string
-      title: string
-      link: string
-    }>
+  instructor?: {
+    name: string
+    image?: {
+      url: string
+    }
+  }
+  publishedDate: string
+  readTime?: number
+  category?: string
+}
+
+async function getAllPosts(): Promise<BlogPost[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/blog-posts?where[_status][equals]=published&limit=100&sort=-publishedDate`, {
+      cache: 'no-store',
+    });
+    
+    if (!res.ok) {
+      return [];
+    }
+    
+    const data = await res.json();
+    return data?.docs || [];
+  } catch (error) {
+    return [];
   }
 }
 
-export default function CMSBlogPage() {
-  const [pageData, setPageData] = useState<BlogPageData[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Initialize AOS after component mounts
-    AOS.init({
-      duration: 600,
-      easing: 'ease-in-out',
-      once: true,
-      mirror: false
-    })
-
-    // Fetch blog page data
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/blog')
-        const data = await response.json()
-
-        setPageData(data.pageData || [])
-      } catch (error) {
-        console.error('Error fetching blog data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="loading-container d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    )
+function formatDate(dateString: string): { day: number; month: string } {
+  const date = new Date(dateString)
+  return {
+    day: date.getDate(),
+    month: date.toLocaleDateString('en-US', { month: 'short' })
   }
+}
 
-  // Extract different sections from pageData
-  const pageTitleSection = pageData.find(section => section.sectionType === 'page-title')
-  const heroSection = pageData.find(section => section.sectionType === 'blog-hero')
-  const postsSection = pageData.find(section => section.sectionType === 'blog-posts')
+export default async function CMSBlogPage() {
+  const posts = await getAllPosts()
+
+  // Separate featured post (first one) from others
+  const featuredPost = posts[0]
+  const heroPosts = posts.slice(1, 4) // Next 3 posts for hero grid
+  const regularPosts = posts.slice(4) // Remaining posts for blog posts section
 
   return (
     <>
       {/* Page Title */}
       <div className="page-title light-background">
         <div className="container d-lg-flex justify-content-between align-items-center">
-          <h1 className="mb-2 mb-lg-0">{pageTitleSection?.pageTitle?.title || 'Blog'}</h1>
+          <h1 className="mb-2 mb-lg-0">Blog</h1>
           <nav className="breadcrumbs">
             <ol>
-              {pageTitleSection?.pageTitle?.breadcrumbs?.map((breadcrumb, index) => (
-                <li key={index} className={breadcrumb.isActive ? 'current' : ''}>
-                  {breadcrumb.link ? (
-                    <Link href={breadcrumb.link}>{breadcrumb.label}</Link>
-                  ) : (
-                    breadcrumb.label
-                  )}
-                </li>
-              )) || (
-                <>
-                  <li><Link href="/">Home</Link></li>
-                  <li className="current">Blog</li>
-                </>
-              )}
+              <li><Link href="/">Home</Link></li>
+              <li className="current">Blog</li>
             </ol>
           </nav>
         </div>
       </div>
 
       {/* Blog Hero Grid */}
-      {heroSection?.blogHero?.posts && (
+      {posts.length > 0 && (
         <section id="blog-hero" className="blog-hero section">
           <div className="container" data-aos="fade-up" data-aos-delay="100">
             <div className="blog-grid">
               {/* Featured Post (Large) */}
-              {heroSection.blogHero.posts[0] && (
+              {featuredPost && (
                 <article className="blog-item featured" data-aos="fade-up">
                   <img 
-                    src={heroSection.blogHero.posts[0].image.url} 
-                    alt={heroSection.blogHero.posts[0].image.alt || heroSection.blogHero.posts[0].title} 
+                    src={featuredPost.featuredImage?.url || '/assets/img/blog/blog-post-1.webp'} 
+                    alt={featuredPost.title} 
                     className="img-fluid" 
                   />
                   <div className="blog-content">
                     <div className="post-meta">
-                      <span className="date">{heroSection.blogHero.posts[0].date}</span>
-                      <span className="category">{heroSection.blogHero.posts[0].category}</span>
+                      <span className="date">
+                        {new Date(featuredPost.publishedDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                      {featuredPost.category && (
+                        <span className="category">{featuredPost.category}</span>
+                      )}
                     </div>
                     <h2 className="post-title">
-                      <Link href={heroSection.blogHero.posts[0].link} title={heroSection.blogHero.posts[0].title}>
-                        {heroSection.blogHero.posts[0].title}
+                      <Link href={`/blog-details/${featuredPost.slug}`} title={featuredPost.title}>
+                        {featuredPost.title}
                       </Link>
                     </h2>
                   </div>
                 </article>
               )}
 
-              {/* Regular Posts */}
-              {heroSection.blogHero.posts.slice(1).map((post, index) => (
-                <article key={index} className="blog-item" data-aos="fade-up" data-aos-delay={(index + 1) * 100}>
+              {/* Regular Posts for Hero Grid */}
+              {heroPosts.map((post, index) => (
+                <article key={post.id} className="blog-item" data-aos="fade-up" data-aos-delay={(index + 1) * 100}>
                   <img 
-                    src={post.image.url} 
-                    alt={post.image.alt || post.title} 
+                    src={post.featuredImage?.url || '/assets/img/blog/blog-post-1.webp'} 
+                    alt={post.title} 
                     className="img-fluid" 
                   />
                   <div className="blog-content">
                     <div className="post-meta">
-                      <span className="date">{post.date}</span>
-                      <span className="category">{post.category}</span>
+                      <span className="date">
+                        {new Date(post.publishedDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                      {post.category && (
+                        <span className="category">{post.category}</span>
+                      )}
                     </div>
                     <h3 className="post-title">
-                      <Link href={post.link} title={post.title}>
+                      <Link href={`/blog-details/${post.slug}`} title={post.title}>
                         {post.title}
                       </Link>
                     </h3>
@@ -168,56 +145,68 @@ export default function CMSBlogPage() {
       )}
 
       {/* Blog Posts Section */}
-      {postsSection?.blogPosts?.posts && (
+      {regularPosts.length > 0 && (
         <section id="blog-posts" className="blog-posts section">
           <div className="container" data-aos="fade-up" data-aos-delay="100">
             <div className="row gy-4">
-              {postsSection.blogPosts.posts.map((post, index) => (
-                <div key={index} className="col-lg-4">
-                  <article className="position-relative h-100">
-                    <div className="post-img position-relative overflow-hidden">
-                      <img 
-                        src={post.image.url} 
-                        className="img-fluid" 
-                        alt={post.title} 
-                      />
-                    </div>
-                    <div className="meta d-flex align-items-end">
-                      <span className="post-date">
-                        <span>{post.date.day}</span>
-                        {post.date.month}
-                      </span>
-                      <div className="d-flex align-items-center">
-                        <i className="bi bi-person"></i> 
-                        <span className="ps-2">{post.author}</span>
+              {regularPosts.map((post, index) => {
+                const dateInfo = formatDate(post.publishedDate)
+                const authorName = post.authorType === 'instructor' 
+                  ? post.instructor?.name 
+                  : post.authorName
+
+                return (
+                  <div key={post.id} className="col-lg-4">
+                    <article className="position-relative h-100">
+                      <div className="post-img position-relative overflow-hidden">
+                        <img 
+                          src={post.featuredImage?.url || '/assets/img/blog/blog-post-1.webp'} 
+                          className="img-fluid" 
+                          alt={post.title} 
+                        />
                       </div>
-                      <span className="px-3 text-black-50">/</span>
-                      <div className="d-flex align-items-center">
-                        <i className="bi bi-folder2"></i> 
-                        <span className="ps-2">{post.category}</span>
+                      <div className="meta d-flex align-items-end">
+                        <span className="post-date">
+                          <span>{dateInfo.day}</span>
+                          {dateInfo.month}
+                        </span>
+                        <div className="d-flex align-items-center">
+                          <i className="bi bi-person"></i> 
+                          <span className="ps-2">{authorName || 'Anonymous'}</span>
+                        </div>
+                        {post.category && (
+                          <>
+                            <span className="px-3 text-black-50">/</span>
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-folder2"></i> 
+                              <span className="ps-2">{post.category}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
-                    </div>
-                    <div className="post-content d-flex flex-column">
-                      <h3 className="post-title">{post.title}</h3>
-                      <Link href={post.link} className="readmore stretched-link">
-                        <span>Read More</span><i className="bi bi-arrow-right"></i>
-                      </Link>
-                    </div>
-                  </article>
-                </div>
-              ))}
+                      <div className="post-content d-flex flex-column">
+                        <h3 className="post-title">{post.title}</h3>
+                        <p>{post.shortDescription}</p>
+                        <Link href={`/blog-details/${post.slug}`} className="readmore stretched-link">
+                          <span>Read More</span><i className="bi bi-arrow-right"></i>
+                        </Link>
+                      </div>
+                    </article>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>
       )}
 
       {/* Show message if no content */}
-      {!heroSection?.blogHero?.posts && !postsSection?.blogPosts?.posts && (
+      {posts.length === 0 && (
         <section className="section">
           <div className="container">
             <div className="text-center py-5">
               <h3>No blog content available</h3>
-              <p>Please add blog content through the admin panel.</p>
+              <p>Please add blog posts through the admin panel.</p>
             </div>
           </div>
         </section>

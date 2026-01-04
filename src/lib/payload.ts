@@ -24,7 +24,8 @@ export async function getFeaturedCourses() {
           { status: { equals: 'published' } }
         ]
       },
-      limit: 6
+      limit: 6,
+      overrideAccess: true,
     })
     return courses.docs
   } catch (error) {
@@ -45,7 +46,8 @@ export async function getFeaturedInstructors() {
           { status: { equals: 'active' } }
         ]
       },
-      limit: 4
+      limit: 4,
+      overrideAccess: true,
     })
     return instructors.docs
   } catch (error) {
@@ -66,7 +68,8 @@ export async function getFeaturedBlogPosts() {
           { status: { equals: 'published' } }
         ]
       },
-      limit: 3
+      limit: 3,
+      overrideAccess: true,
     })
     return posts.docs
   } catch (error) {
@@ -87,7 +90,8 @@ export async function getFeaturedTestimonials() {
           { status: { equals: 'approved' } }
         ]
       },
-      limit: 5
+      limit: 5,
+      overrideAccess: true,
     })
     return testimonials.docs
   } catch (error) {
@@ -126,18 +130,18 @@ export async function getPageContent(pageName: string, section?: string) {
 
     const content = await payload.find({
       collection: collectionSlug,
-      where: whereClause
+      where: whereClause,
+      sort: 'order', // Sort by order field for proper section sequencing
+      overrideAccess: true,
     })
     
-    console.log(`Found ${content.docs.length} items in collection: ${collectionSlug}`)
-    
-    if (section && content.docs.length > 0) {
+    if (section && content.docs?.length > 0) {
       return content.docs[0]
     }
     
-    return content.docs
+    return content.docs || []
   } catch (error) {
-    console.error('Error fetching page content:', error)
+    console.error(`Error fetching page content for ${pageName}:`, error instanceof Error ? error.message : 'Unknown error')
     return section ? null : []
   }
 }
@@ -154,6 +158,7 @@ export async function getMediaUrl(mediaId: any) {
     const media = await payload.findByID({
       collection: 'media',
       id: typeof mediaId === 'string' ? mediaId : mediaId.id,
+      overrideAccess: true,
     })
     
     return media?.url || null
@@ -167,7 +172,8 @@ export async function getSettings() {
   try {
     const payload = await getPayloadInstance()
     const settings = await payload.findGlobal({
-      slug: 'settings'
+      slug: 'settings',
+      overrideAccess: true,
     })
     return settings
   } catch (error) {
@@ -184,7 +190,8 @@ export async function getPricingPlans() {
       where: {
         status: { equals: 'active' }
       },
-      sort: 'order'
+      sort: 'order',
+      overrideAccess: true,
     })
     return plans.docs
   } catch (error) {
@@ -205,7 +212,8 @@ export async function getUpcomingEvents() {
         ]
       },
       limit: 6,
-      sort: 'eventDate'
+      sort: 'eventDate',
+      overrideAccess: true,
     })
     return events.docs
   } catch (error) {
@@ -222,7 +230,8 @@ export async function getContactInfo() {
       where: {
         status: { equals: 'active' }
       },
-      sort: 'order'
+      sort: 'order',
+      overrideAccess: true,
     })
     return contactInfo.docs
   } catch (error) {
@@ -259,6 +268,7 @@ export async function getCollection(collectionSlug: string, options?: any) {
       where: whereClause,
       sort: options?.sort || '-updatedAt',
       limit: options?.limit || 100,
+      overrideAccess: true,
       ...options
     })
     

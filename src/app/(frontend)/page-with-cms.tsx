@@ -186,7 +186,7 @@ export default function HomepageWithCMS() {
 
       setLoading(false)
     } catch (error) {
-      console.error('Error fetching CMS data:', error)
+      // Silently handle error
       setLoading(false)
     }
   }

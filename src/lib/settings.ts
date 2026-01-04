@@ -6,6 +6,7 @@ export async function getSettings() {
     const payload = await getPayload({ config })
     const settings = await payload.findGlobal({
       slug: 'settings',
+      depth: 2, // This will populate the logo and favicon relationships
     })
     return settings
   } catch (error) {

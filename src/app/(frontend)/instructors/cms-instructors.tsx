@@ -85,7 +85,7 @@ export default async function CMSInstructorsPage() {
                           </div>
                         </div>
                         <div className="action-buttons">
-                          <a href={instructor.profileLink || '#'} className="btn-view">View Profile</a>
+                          <Link href={instructor.slug ? `/instructor-profile/${instructor.slug}` : '#'} className="btn-view">View Profile</Link>
                           <div className="social-links">
                             {instructor.socialLinks && instructor.socialLinks.map((social: any, idx: number) => (
                               <a key={idx} href={social.url} target="_blank" rel="noopener noreferrer">
@@ -113,7 +113,7 @@ export default async function CMSInstructorsPage() {
       </>
     )
   } catch (error) {
-    console.error('Error fetching instructors page content:', error)
+    // Return empty sections on error
     return (
       <div className="container py-5">
         <div className="text-center">

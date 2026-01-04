@@ -75,8 +75,7 @@ export interface Config {
     'courses-page': CoursesPage;
     'instructors-page': InstructorsPage;
     'pricing-page': PricingPage;
-    'blog-page': BlogPage;
-    'blog-details-page': BlogDetailsPage;
+    'blog-posts': BlogPost;
     'contact-page': ContactPage;
     'enroll-page': EnrollPage;
     'payload-kv': PayloadKv;
@@ -94,8 +93,7 @@ export interface Config {
     'courses-page': CoursesPageSelect<false> | CoursesPageSelect<true>;
     'instructors-page': InstructorsPageSelect<false> | InstructorsPageSelect<true>;
     'pricing-page': PricingPageSelect<false> | PricingPageSelect<true>;
-    'blog-page': BlogPageSelect<false> | BlogPageSelect<true>;
-    'blog-details-page': BlogDetailsPageSelect<false> | BlogDetailsPageSelect<true>;
+    'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
     'contact-page': ContactPageSelect<false> | ContactPageSelect<true>;
     'enroll-page': EnrollPageSelect<false> | EnrollPageSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -285,25 +283,39 @@ export interface PageContent {
 export interface HomePage {
   id: string;
   /**
-   * Name to identify this section (e.g., "Hero Section", "Featured Courses")
-   */
-  sectionName: string;
-  /**
    * Select the section type
    */
   sectionType:
     | 'hero'
+    | 'our-story'
     | 'featured-courses'
     | 'course-categories'
     | 'featured-instructors'
     | 'testimonials'
     | 'blog-posts'
-    | 'cta';
+    | 'cta'
+    | 'custom-block';
+  /**
+   * Custom name to identify this section (e.g., "Our Best Courses", "Popular Classes")
+   */
+  sectionName: string;
   status: 'active' | 'inactive';
   hero?: {
     title: string;
     description: string;
-    heroImage: string | Media;
+    /**
+     * Add multiple images for a carousel/slider effect
+     */
+    heroImages?:
+      | {
+          image: string | Media;
+          /**
+           * Alternative text for the image
+           */
+          alt?: string | null;
+          id?: string | null;
+        }[]
+      | null;
     stats?:
       | {
           number: number;
@@ -328,9 +340,80 @@ export interface HomePage {
       | null;
     floatingCards?:
       | {
-          icon: 'bi-code-slash' | 'bi-palette' | 'bi-graph-up' | 'bi-laptop' | 'bi-camera' | 'bi-briefcase';
-          title: string;
-          students: string;
+          icon?: ('bi-code-slash' | 'bi-palette' | 'bi-graph-up' | 'bi-laptop' | 'bi-camera' | 'bi-briefcase') | null;
+          title?: string | null;
+          students?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  ourStory?: {
+    /**
+     * e.g., "Our Story"
+     */
+    subtitle?: string | null;
+    /**
+     * e.g., "Educating Minds, Inspiring Hearts"
+     */
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Add up to 3 milestones (not years)
+     */
+    timelinePoints?:
+      | {
+          /**
+           * Milestone title (e.g., "Expert Instructors", "Quality Education")
+           */
+          title?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Button text (replaces 4th timeline point)
+     */
+    buttonText?: string | null;
+    /**
+     * Button link (e.g., /about)
+     */
+    buttonLink?: string | null;
+    /**
+     * Main campus/building image
+     */
+    campusImage?: (string | null) | Media;
+    /**
+     * Add up to 2 cards for Mission & Vision
+     */
+    missionVisionCards?:
+      | {
+          /**
+           * e.g., "Our Mission", "Our Vision"
+           */
+          title?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Add up to 4 core values
+     */
+    coreValues?:
+      | {
+          icon?:
+            | (
+                | 'bi-book'
+                | 'bi-people'
+                | 'bi-lightbulb'
+                | 'bi-globe'
+                | 'bi-award'
+                | 'bi-heart'
+                | 'bi-star'
+                | 'bi-shield'
+              )
+            | null;
+          title?: string | null;
+          description?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -340,18 +423,26 @@ export interface HomePage {
     description: string;
     courses?:
       | {
-          image: string | Media;
+          image?: (string | null) | Media;
           badge?: ('featured' | 'new' | 'certificate' | 'popular') | null;
-          price: string;
-          level: 'Beginner' | 'Intermediate' | 'Advanced';
-          duration: string;
-          title: string;
-          description: string;
-          instructorAvatar: string | Media;
-          instructorName: string;
-          instructorSpecialty: string;
-          rating: number;
-          studentCount: number;
+          price?: string | null;
+          level?: ('Beginner' | 'Intermediate' | 'Advanced') | null;
+          duration?: string | null;
+          title?: string | null;
+          description?: string | null;
+          instructorAvatar?: (string | null) | Media;
+          instructorName?: string | null;
+          instructorSpecialty?: string | null;
+          rating?: number | null;
+          studentCount?: number | null;
+          /**
+           * Button text (e.g., "Enroll Now", "Learn More")
+           */
+          buttonText?: string | null;
+          /**
+           * Button link (e.g., "/enroll", "/course-details")
+           */
+          buttonLink?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -396,19 +487,26 @@ export interface HomePage {
     description: string;
     instructors?:
       | {
-          image: string | Media;
-          name: string;
-          specialty: string;
-          description: string;
-          rating: number;
-          courseCount: number;
-          studentCount: number;
+          image?: (string | null) | Media;
+          name?: string | null;
+          description?: string | null;
+          rating?: number | null;
+          courseCount?: number | null;
+          studentCount?: number | null;
+          /**
+           * Link to instructor profile page
+           */
+          profileLink?: string | null;
+          /**
+           * Custom text for profile button (e.g., "View Profile", "Learn More")
+           */
+          profileButtonText?: string | null;
           socialLinks?:
             | {
                 platform?:
                   | ('linkedin' | 'twitter' | 'github' | 'dribbble' | 'behance' | 'instagram' | 'facebook')
                   | null;
-                url: string;
+                url?: string | null;
                 id?: string | null;
               }[]
             | null;
@@ -498,6 +596,354 @@ export interface HomePage {
         }[]
       | null;
   };
+  /**
+   * Add any custom block (Video, Gallery, Rich Text, etc.) to insert between sections
+   */
+  customBlock?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfHosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            videoFile?: (string | null) | Media;
+            thumbnail?: (string | null) | Media;
+            title?: string | null;
+            description?: string | null;
+            autoplay?: boolean | null;
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              alt: string;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'medium' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('narrow' | 'contained' | 'full') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+      )[]
+    | null;
+  /**
+   * Add flexible content blocks to build your page
+   */
+  contentBlocks?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfhosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            /**
+             * Upload video file
+             */
+            videoFile?: (string | null) | Media;
+            /**
+             * Video thumbnail/poster image
+             */
+            thumbnail?: (string | null) | Media;
+            /**
+             * Optional title above video
+             */
+            title?: string | null;
+            /**
+             * Optional description below video
+             */
+            description?: string | null;
+            /**
+             * Auto-play video when page loads (muted)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Loop video continuously
+             */
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            /**
+             * Video container width
+             */
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              /**
+               * Alt text for accessibility
+               */
+              alt?: string | null;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'normal' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            layout?: ('slider' | 'grid' | 'single') | null;
+            testimonials: {
+              name: string;
+              /**
+               * Job title or role (e.g., "Student", "CEO")
+               */
+              role?: string | null;
+              company?: string | null;
+              avatar?: (string | null) | Media;
+              /**
+               * Star rating (0-5)
+               */
+              rating?: number | null;
+              testimonial: string;
+              id?: string | null;
+            }[];
+            autoplay?: boolean | null;
+            showRating?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            style?: ('banner' | 'card' | 'split' | 'centered') | null;
+            heading: string;
+            subheading?: string | null;
+            image?: (string | null) | Media;
+            backgroundImage?: (string | null) | Media;
+            primaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            secondaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            backgroundColor?: ('default' | 'accent' | 'dark' | 'light') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('full' | 'contained' | 'narrow') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            stats: {
+              /**
+               * Statistic number (e.g., "10K+", "95%")
+               */
+              number: string;
+              /**
+               * Stat description (e.g., "Students Enrolled")
+               */
+              label: string;
+              icon?:
+                | (
+                    | 'bi-people'
+                    | 'bi-book'
+                    | 'bi-award'
+                    | 'bi-star'
+                    | 'bi-trophy'
+                    | 'bi-graph-up'
+                    | 'bi-mortarboard'
+                    | 'bi-play-circle'
+                  )
+                | null;
+              id?: string | null;
+            }[];
+            layout?: ('grid' | 'horizontal') | null;
+            /**
+             * Animate numbers on scroll
+             */
+            animateNumbers?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            layout?: ('accordion' | 'twoColumn') | null;
+            /**
+             * Open first item by default
+             */
+            openFirst?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            formType: 'contact' | 'newsletter' | 'enrollment' | 'custom';
+            title?: string | null;
+            description?: string | null;
+            submitButtonText?: string | null;
+            successMessage?: string | null;
+            formFields?:
+              | {
+                  fieldName: string;
+                  fieldLabel: string;
+                  fieldType: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+                  required?: boolean | null;
+                  placeholder?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'form';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            /**
+             * Date and time to count down to
+             */
+            targetDate: string;
+            /**
+             * Message to show when countdown reaches zero
+             */
+            endMessage?: string | null;
+            showDays?: boolean | null;
+            showHours?: boolean | null;
+            showMinutes?: boolean | null;
+            showSeconds?: boolean | null;
+            ctaButton?: {
+              text?: string | null;
+              link?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'countdown';
+          }
+        | {
+            title?: string | null;
+            platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+            /**
+             * Social media username or handle
+             */
+            username?: string | null;
+            /**
+             * Embed code from the social platform
+             */
+            embedCode?: string | null;
+            /**
+             * Number of posts to display
+             */
+            postLimit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'socialFeed';
+          }
+        | {
+            /**
+             * Optional title for the embed section
+             */
+            title?: string | null;
+            codeType?: ('html' | 'iframe' | 'script') | null;
+            /**
+             * Paste your HTML, embed code, or script here
+             */
+            code: string;
+            /**
+             * Optional height (e.g., "500px", "auto")
+             */
+            height?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'customCode';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Full address to display on map
+             */
+            address?: string | null;
+            /**
+             * Google Maps embed URL or iframe code
+             */
+            embedUrl: string;
+            /**
+             * Map height (e.g., "400px", "500px")
+             */
+            height?: string | null;
+            /**
+             * Show "Get Directions" link
+             */
+            showDirections?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -514,7 +960,7 @@ export interface AboutPage {
   /**
    * Select the section type
    */
-  sectionType: 'page-title' | 'about-main' | 'mission-vision-values' | 'why-choose-us';
+  sectionType: 'page-title' | 'about-main' | 'our-story' | 'mission-vision-values' | 'why-choose-us';
   status: 'active' | 'inactive';
   pageTitle?: {
     title: string;
@@ -536,6 +982,57 @@ export interface AboutPage {
       | {
           count: string;
           label: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  ourStory?: {
+    /**
+     * e.g., "Our Story"
+     */
+    subtitle: string;
+    /**
+     * e.g., "Educating Minds, Inspiring Hearts"
+     */
+    title: string;
+    description: string;
+    timeline?:
+      | {
+          /**
+           * e.g., "1965", "1982"
+           */
+          year: string;
+          description: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Main campus/building image
+     */
+    campusImage: string | Media;
+    missionVisionCards?:
+      | {
+          /**
+           * e.g., "Our Mission", "Our Vision"
+           */
+          title: string;
+          description: string;
+          id?: string | null;
+        }[]
+      | null;
+    coreValues?:
+      | {
+          icon:
+            | 'bi-book'
+            | 'bi-people'
+            | 'bi-lightbulb'
+            | 'bi-globe'
+            | 'bi-award'
+            | 'bi-heart'
+            | 'bi-star'
+            | 'bi-shield';
+          title: string;
+          description: string;
           id?: string | null;
         }[]
       | null;
@@ -570,6 +1067,292 @@ export interface AboutPage {
         }[]
       | null;
   };
+  /**
+   * Add flexible content blocks to build your page
+   */
+  contentBlocks?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfhosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            /**
+             * Upload video file
+             */
+            videoFile?: (string | null) | Media;
+            /**
+             * Video thumbnail/poster image
+             */
+            thumbnail?: (string | null) | Media;
+            /**
+             * Optional title above video
+             */
+            title?: string | null;
+            /**
+             * Optional description below video
+             */
+            description?: string | null;
+            /**
+             * Auto-play video when page loads (muted)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Loop video continuously
+             */
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            /**
+             * Video container width
+             */
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              /**
+               * Alt text for accessibility
+               */
+              alt?: string | null;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'normal' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            layout?: ('slider' | 'grid' | 'single') | null;
+            testimonials: {
+              name: string;
+              /**
+               * Job title or role (e.g., "Student", "CEO")
+               */
+              role?: string | null;
+              company?: string | null;
+              avatar?: (string | null) | Media;
+              /**
+               * Star rating (0-5)
+               */
+              rating?: number | null;
+              testimonial: string;
+              id?: string | null;
+            }[];
+            autoplay?: boolean | null;
+            showRating?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            style?: ('banner' | 'card' | 'split' | 'centered') | null;
+            heading: string;
+            subheading?: string | null;
+            image?: (string | null) | Media;
+            backgroundImage?: (string | null) | Media;
+            primaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            secondaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            backgroundColor?: ('default' | 'accent' | 'dark' | 'light') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('full' | 'contained' | 'narrow') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            stats: {
+              /**
+               * Statistic number (e.g., "10K+", "95%")
+               */
+              number: string;
+              /**
+               * Stat description (e.g., "Students Enrolled")
+               */
+              label: string;
+              icon?:
+                | (
+                    | 'bi-people'
+                    | 'bi-book'
+                    | 'bi-award'
+                    | 'bi-star'
+                    | 'bi-trophy'
+                    | 'bi-graph-up'
+                    | 'bi-mortarboard'
+                    | 'bi-play-circle'
+                  )
+                | null;
+              id?: string | null;
+            }[];
+            layout?: ('grid' | 'horizontal') | null;
+            /**
+             * Animate numbers on scroll
+             */
+            animateNumbers?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            layout?: ('accordion' | 'twoColumn') | null;
+            /**
+             * Open first item by default
+             */
+            openFirst?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            formType: 'contact' | 'newsletter' | 'enrollment' | 'custom';
+            title?: string | null;
+            description?: string | null;
+            submitButtonText?: string | null;
+            successMessage?: string | null;
+            formFields?:
+              | {
+                  fieldName: string;
+                  fieldLabel: string;
+                  fieldType: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+                  required?: boolean | null;
+                  placeholder?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'form';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            /**
+             * Date and time to count down to
+             */
+            targetDate: string;
+            /**
+             * Message to show when countdown reaches zero
+             */
+            endMessage?: string | null;
+            showDays?: boolean | null;
+            showHours?: boolean | null;
+            showMinutes?: boolean | null;
+            showSeconds?: boolean | null;
+            ctaButton?: {
+              text?: string | null;
+              link?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'countdown';
+          }
+        | {
+            title?: string | null;
+            platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+            /**
+             * Social media username or handle
+             */
+            username?: string | null;
+            /**
+             * Embed code from the social platform
+             */
+            embedCode?: string | null;
+            /**
+             * Number of posts to display
+             */
+            postLimit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'socialFeed';
+          }
+        | {
+            /**
+             * Optional title for the embed section
+             */
+            title?: string | null;
+            codeType?: ('html' | 'iframe' | 'script') | null;
+            /**
+             * Paste your HTML, embed code, or script here
+             */
+            code: string;
+            /**
+             * Optional height (e.g., "500px", "auto")
+             */
+            height?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'customCode';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Full address to display on map
+             */
+            address?: string | null;
+            /**
+             * Google Maps embed URL or iframe code
+             */
+            embedUrl: string;
+            /**
+             * Map height (e.g., "400px", "500px")
+             */
+            height?: string | null;
+            /**
+             * Show "Get Directions" link
+             */
+            showDirections?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -653,6 +1436,292 @@ export interface CoursesPage {
         }[]
       | null;
   };
+  /**
+   * Add flexible content blocks to build your page
+   */
+  contentBlocks?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfhosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            /**
+             * Upload video file
+             */
+            videoFile?: (string | null) | Media;
+            /**
+             * Video thumbnail/poster image
+             */
+            thumbnail?: (string | null) | Media;
+            /**
+             * Optional title above video
+             */
+            title?: string | null;
+            /**
+             * Optional description below video
+             */
+            description?: string | null;
+            /**
+             * Auto-play video when page loads (muted)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Loop video continuously
+             */
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            /**
+             * Video container width
+             */
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              /**
+               * Alt text for accessibility
+               */
+              alt?: string | null;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'normal' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            layout?: ('slider' | 'grid' | 'single') | null;
+            testimonials: {
+              name: string;
+              /**
+               * Job title or role (e.g., "Student", "CEO")
+               */
+              role?: string | null;
+              company?: string | null;
+              avatar?: (string | null) | Media;
+              /**
+               * Star rating (0-5)
+               */
+              rating?: number | null;
+              testimonial: string;
+              id?: string | null;
+            }[];
+            autoplay?: boolean | null;
+            showRating?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            style?: ('banner' | 'card' | 'split' | 'centered') | null;
+            heading: string;
+            subheading?: string | null;
+            image?: (string | null) | Media;
+            backgroundImage?: (string | null) | Media;
+            primaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            secondaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            backgroundColor?: ('default' | 'accent' | 'dark' | 'light') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('full' | 'contained' | 'narrow') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            stats: {
+              /**
+               * Statistic number (e.g., "10K+", "95%")
+               */
+              number: string;
+              /**
+               * Stat description (e.g., "Students Enrolled")
+               */
+              label: string;
+              icon?:
+                | (
+                    | 'bi-people'
+                    | 'bi-book'
+                    | 'bi-award'
+                    | 'bi-star'
+                    | 'bi-trophy'
+                    | 'bi-graph-up'
+                    | 'bi-mortarboard'
+                    | 'bi-play-circle'
+                  )
+                | null;
+              id?: string | null;
+            }[];
+            layout?: ('grid' | 'horizontal') | null;
+            /**
+             * Animate numbers on scroll
+             */
+            animateNumbers?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            layout?: ('accordion' | 'twoColumn') | null;
+            /**
+             * Open first item by default
+             */
+            openFirst?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            formType: 'contact' | 'newsletter' | 'enrollment' | 'custom';
+            title?: string | null;
+            description?: string | null;
+            submitButtonText?: string | null;
+            successMessage?: string | null;
+            formFields?:
+              | {
+                  fieldName: string;
+                  fieldLabel: string;
+                  fieldType: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+                  required?: boolean | null;
+                  placeholder?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'form';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            /**
+             * Date and time to count down to
+             */
+            targetDate: string;
+            /**
+             * Message to show when countdown reaches zero
+             */
+            endMessage?: string | null;
+            showDays?: boolean | null;
+            showHours?: boolean | null;
+            showMinutes?: boolean | null;
+            showSeconds?: boolean | null;
+            ctaButton?: {
+              text?: string | null;
+              link?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'countdown';
+          }
+        | {
+            title?: string | null;
+            platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+            /**
+             * Social media username or handle
+             */
+            username?: string | null;
+            /**
+             * Embed code from the social platform
+             */
+            embedCode?: string | null;
+            /**
+             * Number of posts to display
+             */
+            postLimit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'socialFeed';
+          }
+        | {
+            /**
+             * Optional title for the embed section
+             */
+            title?: string | null;
+            codeType?: ('html' | 'iframe' | 'script') | null;
+            /**
+             * Paste your HTML, embed code, or script here
+             */
+            code: string;
+            /**
+             * Optional height (e.g., "500px", "auto")
+             */
+            height?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'customCode';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Full address to display on map
+             */
+            address?: string | null;
+            /**
+             * Google Maps embed URL or iframe code
+             */
+            embedUrl: string;
+            /**
+             * Map height (e.g., "400px", "500px")
+             */
+            height?: string | null;
+            /**
+             * Show "Get Directions" link
+             */
+            showDirections?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -714,6 +1783,292 @@ export interface InstructorsPage {
         }[]
       | null;
   };
+  /**
+   * Add flexible content blocks to build your page
+   */
+  contentBlocks?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfhosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            /**
+             * Upload video file
+             */
+            videoFile?: (string | null) | Media;
+            /**
+             * Video thumbnail/poster image
+             */
+            thumbnail?: (string | null) | Media;
+            /**
+             * Optional title above video
+             */
+            title?: string | null;
+            /**
+             * Optional description below video
+             */
+            description?: string | null;
+            /**
+             * Auto-play video when page loads (muted)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Loop video continuously
+             */
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            /**
+             * Video container width
+             */
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              /**
+               * Alt text for accessibility
+               */
+              alt?: string | null;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'normal' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            layout?: ('slider' | 'grid' | 'single') | null;
+            testimonials: {
+              name: string;
+              /**
+               * Job title or role (e.g., "Student", "CEO")
+               */
+              role?: string | null;
+              company?: string | null;
+              avatar?: (string | null) | Media;
+              /**
+               * Star rating (0-5)
+               */
+              rating?: number | null;
+              testimonial: string;
+              id?: string | null;
+            }[];
+            autoplay?: boolean | null;
+            showRating?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            style?: ('banner' | 'card' | 'split' | 'centered') | null;
+            heading: string;
+            subheading?: string | null;
+            image?: (string | null) | Media;
+            backgroundImage?: (string | null) | Media;
+            primaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            secondaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            backgroundColor?: ('default' | 'accent' | 'dark' | 'light') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('full' | 'contained' | 'narrow') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            stats: {
+              /**
+               * Statistic number (e.g., "10K+", "95%")
+               */
+              number: string;
+              /**
+               * Stat description (e.g., "Students Enrolled")
+               */
+              label: string;
+              icon?:
+                | (
+                    | 'bi-people'
+                    | 'bi-book'
+                    | 'bi-award'
+                    | 'bi-star'
+                    | 'bi-trophy'
+                    | 'bi-graph-up'
+                    | 'bi-mortarboard'
+                    | 'bi-play-circle'
+                  )
+                | null;
+              id?: string | null;
+            }[];
+            layout?: ('grid' | 'horizontal') | null;
+            /**
+             * Animate numbers on scroll
+             */
+            animateNumbers?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            layout?: ('accordion' | 'twoColumn') | null;
+            /**
+             * Open first item by default
+             */
+            openFirst?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            formType: 'contact' | 'newsletter' | 'enrollment' | 'custom';
+            title?: string | null;
+            description?: string | null;
+            submitButtonText?: string | null;
+            successMessage?: string | null;
+            formFields?:
+              | {
+                  fieldName: string;
+                  fieldLabel: string;
+                  fieldType: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+                  required?: boolean | null;
+                  placeholder?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'form';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            /**
+             * Date and time to count down to
+             */
+            targetDate: string;
+            /**
+             * Message to show when countdown reaches zero
+             */
+            endMessage?: string | null;
+            showDays?: boolean | null;
+            showHours?: boolean | null;
+            showMinutes?: boolean | null;
+            showSeconds?: boolean | null;
+            ctaButton?: {
+              text?: string | null;
+              link?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'countdown';
+          }
+        | {
+            title?: string | null;
+            platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+            /**
+             * Social media username or handle
+             */
+            username?: string | null;
+            /**
+             * Embed code from the social platform
+             */
+            embedCode?: string | null;
+            /**
+             * Number of posts to display
+             */
+            postLimit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'socialFeed';
+          }
+        | {
+            /**
+             * Optional title for the embed section
+             */
+            title?: string | null;
+            codeType?: ('html' | 'iframe' | 'script') | null;
+            /**
+             * Paste your HTML, embed code, or script here
+             */
+            code: string;
+            /**
+             * Optional height (e.g., "500px", "auto")
+             */
+            height?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'customCode';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Full address to display on map
+             */
+            address?: string | null;
+            /**
+             * Google Maps embed URL or iframe code
+             */
+            embedUrl: string;
+            /**
+             * Map height (e.g., "400px", "500px")
+             */
+            height?: string | null;
+            /**
+             * Show "Get Directions" link
+             */
+            showDirections?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -766,232 +2121,385 @@ export interface PricingPage {
         }[]
       | null;
   };
+  /**
+   * Add flexible content blocks to build your page
+   */
+  contentBlocks?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfhosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            /**
+             * Upload video file
+             */
+            videoFile?: (string | null) | Media;
+            /**
+             * Video thumbnail/poster image
+             */
+            thumbnail?: (string | null) | Media;
+            /**
+             * Optional title above video
+             */
+            title?: string | null;
+            /**
+             * Optional description below video
+             */
+            description?: string | null;
+            /**
+             * Auto-play video when page loads (muted)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Loop video continuously
+             */
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            /**
+             * Video container width
+             */
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              /**
+               * Alt text for accessibility
+               */
+              alt?: string | null;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'normal' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            layout?: ('slider' | 'grid' | 'single') | null;
+            testimonials: {
+              name: string;
+              /**
+               * Job title or role (e.g., "Student", "CEO")
+               */
+              role?: string | null;
+              company?: string | null;
+              avatar?: (string | null) | Media;
+              /**
+               * Star rating (0-5)
+               */
+              rating?: number | null;
+              testimonial: string;
+              id?: string | null;
+            }[];
+            autoplay?: boolean | null;
+            showRating?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            style?: ('banner' | 'card' | 'split' | 'centered') | null;
+            heading: string;
+            subheading?: string | null;
+            image?: (string | null) | Media;
+            backgroundImage?: (string | null) | Media;
+            primaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            secondaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            backgroundColor?: ('default' | 'accent' | 'dark' | 'light') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('full' | 'contained' | 'narrow') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            stats: {
+              /**
+               * Statistic number (e.g., "10K+", "95%")
+               */
+              number: string;
+              /**
+               * Stat description (e.g., "Students Enrolled")
+               */
+              label: string;
+              icon?:
+                | (
+                    | 'bi-people'
+                    | 'bi-book'
+                    | 'bi-award'
+                    | 'bi-star'
+                    | 'bi-trophy'
+                    | 'bi-graph-up'
+                    | 'bi-mortarboard'
+                    | 'bi-play-circle'
+                  )
+                | null;
+              id?: string | null;
+            }[];
+            layout?: ('grid' | 'horizontal') | null;
+            /**
+             * Animate numbers on scroll
+             */
+            animateNumbers?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            layout?: ('accordion' | 'twoColumn') | null;
+            /**
+             * Open first item by default
+             */
+            openFirst?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            formType: 'contact' | 'newsletter' | 'enrollment' | 'custom';
+            title?: string | null;
+            description?: string | null;
+            submitButtonText?: string | null;
+            successMessage?: string | null;
+            formFields?:
+              | {
+                  fieldName: string;
+                  fieldLabel: string;
+                  fieldType: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+                  required?: boolean | null;
+                  placeholder?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'form';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            /**
+             * Date and time to count down to
+             */
+            targetDate: string;
+            /**
+             * Message to show when countdown reaches zero
+             */
+            endMessage?: string | null;
+            showDays?: boolean | null;
+            showHours?: boolean | null;
+            showMinutes?: boolean | null;
+            showSeconds?: boolean | null;
+            ctaButton?: {
+              text?: string | null;
+              link?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'countdown';
+          }
+        | {
+            title?: string | null;
+            platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+            /**
+             * Social media username or handle
+             */
+            username?: string | null;
+            /**
+             * Embed code from the social platform
+             */
+            embedCode?: string | null;
+            /**
+             * Number of posts to display
+             */
+            postLimit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'socialFeed';
+          }
+        | {
+            /**
+             * Optional title for the embed section
+             */
+            title?: string | null;
+            codeType?: ('html' | 'iframe' | 'script') | null;
+            /**
+             * Paste your HTML, embed code, or script here
+             */
+            code: string;
+            /**
+             * Optional height (e.g., "500px", "auto")
+             */
+            height?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'customCode';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Full address to display on map
+             */
+            address?: string | null;
+            /**
+             * Google Maps embed URL or iframe code
+             */
+            embedUrl: string;
+            /**
+             * Map height (e.g., "400px", "500px")
+             */
+            height?: string | null;
+            /**
+             * Show "Get Directions" link
+             */
+            showDirections?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog-page".
+ * via the `definition` "blog-posts".
  */
-export interface BlogPage {
+export interface BlogPost {
   id: string;
   /**
-   * Internal name for this section (e.g., "Blog Page Title", "Hero Posts Grid")
+   * Main blog post title
    */
-  sectionName: string;
+  title: string;
   /**
-   * Select the type of section
+   * URL-friendly version of title (e.g., "my-first-blog-post")
    */
-  sectionType: 'page-title' | 'blog-hero' | 'blog-posts';
-  status: 'active' | 'inactive';
-  pageTitle?: {
-    title: string;
-    breadcrumbs?:
-      | {
-          label: string;
-          link?: string | null;
-          isActive?: boolean | null;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  blogHero?: {
-    /**
-     * First post will be featured (large), rest will be regular size
-     */
-    posts?:
-      | {
-          image: string | Media;
-          /**
-           * e.g., "Apr. 14th, 2025"
-           */
-          date: string;
-          /**
-           * e.g., "Technology", "Security", "Career"
-           */
-          category: string;
-          title: string;
-          link: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  blogPosts?: {
-    posts?:
-      | {
-          image: string | Media;
-          date: {
-            /**
-             * e.g., 12
-             */
-            day: number;
-            /**
-             * e.g., "December"
-             */
-            month: string;
-          };
-          /**
-           * e.g., "John Doe"
-           */
-          author: string;
-          /**
-           * e.g., "Politics", "Economics", "Sports"
-           */
-          category: string;
-          title: string;
-          link: string;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog-details-page".
- */
-export interface BlogDetailsPage {
-  id: string;
+  slug: string;
   /**
-   * Internal name for this section (e.g., "Blog Details Page Title", "Article Content")
+   * Brief summary/excerpt shown on blog listing pages
    */
-  sectionName: string;
+  shortDescription: string;
   /**
-   * Select the type of section
+   * Main image shown on blog cards and detail page
    */
-  sectionType: 'page-title' | 'article-header' | 'article-content' | 'comments';
-  status: 'active' | 'inactive';
-  pageTitle?: {
-    title: string;
-    breadcrumbs?:
-      | {
-          label: string;
-          link?: string | null;
-          isActive?: boolean | null;
-          id?: string | null;
-        }[]
-      | null;
-  };
-  articleHeader?: {
-    /**
-     * Article categories/tags shown above title
-     */
-    categories?:
-      | {
-          name: string;
-          link?: string | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Main article title
-     */
-    title: string;
-    author: {
-      image: string | Media;
-      name: string;
-      role: string;
+  featuredImage: string | Media;
+  category: 'web-development' | 'data-science' | 'design' | 'marketing' | 'business' | 'general';
+  /**
+   * Choose how to add author information
+   */
+  authorType: 'manual' | 'instructor';
+  /**
+   * Author full name
+   */
+  authorName?: string | null;
+  /**
+   * Author profile photo
+   */
+  authorImage?: (string | null) | Media;
+  /**
+   * Author job title/role (e.g., "Senior Developer")
+   */
+  authorRole?: string | null;
+  /**
+   * Short bio about the author (optional)
+   */
+  authorBio?: string | null;
+  /**
+   * Select an instructor as the author
+   */
+  instructor?: (string | null) | InstructorsPage;
+  /**
+   * Main blog post content (rich text editor)
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
     };
-    postInfo: {
-      /**
-       * e.g., "April 15, 2025"
-       */
-      date: string;
-      /**
-       * e.g., "10 min read"
-       */
-      readTime: string;
-      commentsCount: number;
-    };
-    featuredImage: string | Media;
-    /**
-     * Table of contents items
-     */
-    tableOfContents?:
-      | {
-          label: string;
-          /**
-           * Anchor ID without # (e.g., "introduction")
-           */
-          anchor: string;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Related topic tags shown at bottom
-     */
-    tags?:
-      | {
-          name: string;
-          link?: string | null;
-          id?: string | null;
-        }[]
-      | null;
+    [k: string]: unknown;
   };
-  articleContent?: {
-    /**
-     * Content sections of the article
-     */
-    sections?:
-      | {
-          /**
-           * ID for anchor linking (e.g., "introduction")
-           */
-          sectionId: string;
-          /**
-           * Section heading (optional for introduction)
-           */
-          heading?: string | null;
-          content: string;
-          hasQuote?: boolean | null;
-          quote?: {
-            text: string;
-            author: string;
-          };
-          hasImage?: boolean | null;
-          image?: {
-            file: string | Media;
-            caption?: string | null;
-            position?: ('left' | 'right' | 'center') | null;
-          };
-          id?: string | null;
-        }[]
-      | null;
-  };
-  comments?: {
-    heading?: string | null;
-    totalComments: number;
-    /**
-     * Top-level comments with optional replies
-     */
-    commentThreads?:
-      | {
-          avatar: string | Media;
-          authorName: string;
-          /**
-           * e.g., "2 hours ago"
-           */
-          timeAgo: string;
-          likes?: number | null;
-          commentText: string;
-          /**
-           * Nested replies to this comment
-           */
-          replies?:
-            | {
-                avatar: string | Media;
-                authorName: string;
-                timeAgo: string;
-                likes?: number | null;
-                commentText: string;
-                id?: string | null;
-              }[]
-            | null;
-          id?: string | null;
-        }[]
-      | null;
-  };
+  /**
+   * Publication date
+   */
+  publishedDate: string;
+  /**
+   * Estimated reading time (e.g., "5 min read")
+   */
+  readTime?: string | null;
+  /**
+   * Related tags/keywords for this post
+   */
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Publication status
+   */
+  status: 'draft' | 'published';
+  /**
+   * SEO meta description (optional)
+   */
+  metaDescription?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1065,6 +2573,292 @@ export interface ContactPage {
         | null;
     };
   };
+  /**
+   * Add flexible content blocks to build your page
+   */
+  contentBlocks?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfhosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            /**
+             * Upload video file
+             */
+            videoFile?: (string | null) | Media;
+            /**
+             * Video thumbnail/poster image
+             */
+            thumbnail?: (string | null) | Media;
+            /**
+             * Optional title above video
+             */
+            title?: string | null;
+            /**
+             * Optional description below video
+             */
+            description?: string | null;
+            /**
+             * Auto-play video when page loads (muted)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Loop video continuously
+             */
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            /**
+             * Video container width
+             */
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              /**
+               * Alt text for accessibility
+               */
+              alt?: string | null;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'normal' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            layout?: ('slider' | 'grid' | 'single') | null;
+            testimonials: {
+              name: string;
+              /**
+               * Job title or role (e.g., "Student", "CEO")
+               */
+              role?: string | null;
+              company?: string | null;
+              avatar?: (string | null) | Media;
+              /**
+               * Star rating (0-5)
+               */
+              rating?: number | null;
+              testimonial: string;
+              id?: string | null;
+            }[];
+            autoplay?: boolean | null;
+            showRating?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            style?: ('banner' | 'card' | 'split' | 'centered') | null;
+            heading: string;
+            subheading?: string | null;
+            image?: (string | null) | Media;
+            backgroundImage?: (string | null) | Media;
+            primaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            secondaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            backgroundColor?: ('default' | 'accent' | 'dark' | 'light') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('full' | 'contained' | 'narrow') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            stats: {
+              /**
+               * Statistic number (e.g., "10K+", "95%")
+               */
+              number: string;
+              /**
+               * Stat description (e.g., "Students Enrolled")
+               */
+              label: string;
+              icon?:
+                | (
+                    | 'bi-people'
+                    | 'bi-book'
+                    | 'bi-award'
+                    | 'bi-star'
+                    | 'bi-trophy'
+                    | 'bi-graph-up'
+                    | 'bi-mortarboard'
+                    | 'bi-play-circle'
+                  )
+                | null;
+              id?: string | null;
+            }[];
+            layout?: ('grid' | 'horizontal') | null;
+            /**
+             * Animate numbers on scroll
+             */
+            animateNumbers?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            layout?: ('accordion' | 'twoColumn') | null;
+            /**
+             * Open first item by default
+             */
+            openFirst?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            formType: 'contact' | 'newsletter' | 'enrollment' | 'custom';
+            title?: string | null;
+            description?: string | null;
+            submitButtonText?: string | null;
+            successMessage?: string | null;
+            formFields?:
+              | {
+                  fieldName: string;
+                  fieldLabel: string;
+                  fieldType: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+                  required?: boolean | null;
+                  placeholder?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'form';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            /**
+             * Date and time to count down to
+             */
+            targetDate: string;
+            /**
+             * Message to show when countdown reaches zero
+             */
+            endMessage?: string | null;
+            showDays?: boolean | null;
+            showHours?: boolean | null;
+            showMinutes?: boolean | null;
+            showSeconds?: boolean | null;
+            ctaButton?: {
+              text?: string | null;
+              link?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'countdown';
+          }
+        | {
+            title?: string | null;
+            platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+            /**
+             * Social media username or handle
+             */
+            username?: string | null;
+            /**
+             * Embed code from the social platform
+             */
+            embedCode?: string | null;
+            /**
+             * Number of posts to display
+             */
+            postLimit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'socialFeed';
+          }
+        | {
+            /**
+             * Optional title for the embed section
+             */
+            title?: string | null;
+            codeType?: ('html' | 'iframe' | 'script') | null;
+            /**
+             * Paste your HTML, embed code, or script here
+             */
+            code: string;
+            /**
+             * Optional height (e.g., "500px", "auto")
+             */
+            height?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'customCode';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Full address to display on map
+             */
+            address?: string | null;
+            /**
+             * Google Maps embed URL or iframe code
+             */
+            embedUrl: string;
+            /**
+             * Map height (e.g., "400px", "500px")
+             */
+            height?: string | null;
+            /**
+             * Show "Get Directions" link
+             */
+            showDirections?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1184,6 +2978,292 @@ export interface EnrollPage {
         }[]
       | null;
   };
+  /**
+   * Add flexible content blocks to build your page
+   */
+  contentBlocks?:
+    | (
+        | {
+            videoType: 'youtube' | 'vimeo' | 'selfhosted' | 'external';
+            /**
+             * Full YouTube URL (e.g., https://www.youtube.com/watch?v=xxxxx) or Vimeo URL
+             */
+            videoUrl?: string | null;
+            /**
+             * Upload video file
+             */
+            videoFile?: (string | null) | Media;
+            /**
+             * Video thumbnail/poster image
+             */
+            thumbnail?: (string | null) | Media;
+            /**
+             * Optional title above video
+             */
+            title?: string | null;
+            /**
+             * Optional description below video
+             */
+            description?: string | null;
+            /**
+             * Auto-play video when page loads (muted)
+             */
+            autoplay?: boolean | null;
+            /**
+             * Loop video continuously
+             */
+            loop?: boolean | null;
+            aspectRatio?: ('16:9' | '4:3' | '1:1' | '21:9') | null;
+            /**
+             * Video container width
+             */
+            width?: ('full' | 'contained' | 'wide') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            galleryType: 'grid' | 'carousel' | 'masonry' | 'lightbox';
+            images: {
+              image: string | Media;
+              caption?: string | null;
+              /**
+               * Alt text for accessibility
+               */
+              alt?: string | null;
+              id?: string | null;
+            }[];
+            columns?: ('2' | '3' | '4' | '5') | null;
+            spacing?: ('none' | 'small' | 'normal' | 'large') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            layout?: ('slider' | 'grid' | 'single') | null;
+            testimonials: {
+              name: string;
+              /**
+               * Job title or role (e.g., "Student", "CEO")
+               */
+              role?: string | null;
+              company?: string | null;
+              avatar?: (string | null) | Media;
+              /**
+               * Star rating (0-5)
+               */
+              rating?: number | null;
+              testimonial: string;
+              id?: string | null;
+            }[];
+            autoplay?: boolean | null;
+            showRating?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'testimonials';
+          }
+        | {
+            style?: ('banner' | 'card' | 'split' | 'centered') | null;
+            heading: string;
+            subheading?: string | null;
+            image?: (string | null) | Media;
+            backgroundImage?: (string | null) | Media;
+            primaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            secondaryButton?: {
+              text?: string | null;
+              link?: string | null;
+              style?: ('primary' | 'secondary' | 'outline') | null;
+            };
+            backgroundColor?: ('default' | 'accent' | 'dark' | 'light') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            width?: ('full' | 'contained' | 'narrow') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            stats: {
+              /**
+               * Statistic number (e.g., "10K+", "95%")
+               */
+              number: string;
+              /**
+               * Stat description (e.g., "Students Enrolled")
+               */
+              label: string;
+              icon?:
+                | (
+                    | 'bi-people'
+                    | 'bi-book'
+                    | 'bi-award'
+                    | 'bi-star'
+                    | 'bi-trophy'
+                    | 'bi-graph-up'
+                    | 'bi-mortarboard'
+                    | 'bi-play-circle'
+                  )
+                | null;
+              id?: string | null;
+            }[];
+            layout?: ('grid' | 'horizontal') | null;
+            /**
+             * Animate numbers on scroll
+             */
+            animateNumbers?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            layout?: ('accordion' | 'twoColumn') | null;
+            /**
+             * Open first item by default
+             */
+            openFirst?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            formType: 'contact' | 'newsletter' | 'enrollment' | 'custom';
+            title?: string | null;
+            description?: string | null;
+            submitButtonText?: string | null;
+            successMessage?: string | null;
+            formFields?:
+              | {
+                  fieldName: string;
+                  fieldLabel: string;
+                  fieldType: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox';
+                  required?: boolean | null;
+                  placeholder?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'form';
+          }
+        | {
+            title?: string | null;
+            description?: string | null;
+            /**
+             * Date and time to count down to
+             */
+            targetDate: string;
+            /**
+             * Message to show when countdown reaches zero
+             */
+            endMessage?: string | null;
+            showDays?: boolean | null;
+            showHours?: boolean | null;
+            showMinutes?: boolean | null;
+            showSeconds?: boolean | null;
+            ctaButton?: {
+              text?: string | null;
+              link?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'countdown';
+          }
+        | {
+            title?: string | null;
+            platform: 'instagram' | 'twitter' | 'facebook' | 'linkedin';
+            /**
+             * Social media username or handle
+             */
+            username?: string | null;
+            /**
+             * Embed code from the social platform
+             */
+            embedCode?: string | null;
+            /**
+             * Number of posts to display
+             */
+            postLimit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'socialFeed';
+          }
+        | {
+            /**
+             * Optional title for the embed section
+             */
+            title?: string | null;
+            codeType?: ('html' | 'iframe' | 'script') | null;
+            /**
+             * Paste your HTML, embed code, or script here
+             */
+            code: string;
+            /**
+             * Optional height (e.g., "500px", "auto")
+             */
+            height?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'customCode';
+          }
+        | {
+            title?: string | null;
+            /**
+             * Full address to display on map
+             */
+            address?: string | null;
+            /**
+             * Google Maps embed URL or iframe code
+             */
+            embedUrl: string;
+            /**
+             * Map height (e.g., "400px", "500px")
+             */
+            height?: string | null;
+            /**
+             * Show "Get Directions" link
+             */
+            showDirections?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'map';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1244,12 +3324,8 @@ export interface PayloadLockedDocument {
         value: string | PricingPage;
       } | null)
     | ({
-        relationTo: 'blog-page';
-        value: string | BlogPage;
-      } | null)
-    | ({
-        relationTo: 'blog-details-page';
-        value: string | BlogDetailsPage;
+        relationTo: 'blog-posts';
+        value: string | BlogPost;
       } | null)
     | ({
         relationTo: 'contact-page';
@@ -1400,15 +3476,21 @@ export interface PageContentSelect<T extends boolean = true> {
  * via the `definition` "home-page_select".
  */
 export interface HomePageSelect<T extends boolean = true> {
-  sectionName?: T;
   sectionType?: T;
+  sectionName?: T;
   status?: T;
   hero?:
     | T
     | {
         title?: T;
         description?: T;
-        heroImage?: T;
+        heroImages?:
+          | T
+          | {
+              image?: T;
+              alt?: T;
+              id?: T;
+            };
         stats?:
           | T
           | {
@@ -1444,6 +3526,38 @@ export interface HomePageSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  ourStory?:
+    | T
+    | {
+        subtitle?: T;
+        title?: T;
+        description?: T;
+        timelinePoints?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+        buttonText?: T;
+        buttonLink?: T;
+        campusImage?: T;
+        missionVisionCards?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+        coreValues?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+      };
   featuredCourses?:
     | T
     | {
@@ -1464,6 +3578,8 @@ export interface HomePageSelect<T extends boolean = true> {
               instructorSpecialty?: T;
               rating?: T;
               studentCount?: T;
+              buttonText?: T;
+              buttonLink?: T;
               id?: T;
             };
         viewAllButton?:
@@ -1498,11 +3614,12 @@ export interface HomePageSelect<T extends boolean = true> {
           | {
               image?: T;
               name?: T;
-              specialty?: T;
               description?: T;
               rating?: T;
               courseCount?: T;
               studentCount?: T;
+              profileLink?: T;
+              profileButtonText?: T;
               socialLinks?:
                 | T
                 | {
@@ -1607,6 +3724,256 @@ export interface HomePageSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  customBlock?:
+    | T
+    | {
+        video?:
+          | T
+          | {
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
+              title?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  contentBlocks?:
+    | T
+    | {
+        video?:
+          | T
+          | {
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
+              title?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              layout?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    company?: T;
+                    avatar?: T;
+                    rating?: T;
+                    testimonial?: T;
+                    id?: T;
+                  };
+              autoplay?: T;
+              showRating?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              style?: T;
+              heading?: T;
+              subheading?: T;
+              image?: T;
+              backgroundImage?: T;
+              primaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              secondaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              backgroundColor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              stats?:
+                | T
+                | {
+                    number?: T;
+                    label?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              animateNumbers?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              openFirst?: T;
+              id?: T;
+              blockName?: T;
+            };
+        form?:
+          | T
+          | {
+              formType?: T;
+              title?: T;
+              description?: T;
+              submitButtonText?: T;
+              successMessage?: T;
+              formFields?:
+                | T
+                | {
+                    fieldName?: T;
+                    fieldLabel?: T;
+                    fieldType?: T;
+                    required?: T;
+                    placeholder?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        countdown?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              targetDate?: T;
+              endMessage?: T;
+              showDays?: T;
+              showHours?: T;
+              showMinutes?: T;
+              showSeconds?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        socialFeed?:
+          | T
+          | {
+              title?: T;
+              platform?: T;
+              username?: T;
+              embedCode?: T;
+              postLimit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        customCode?:
+          | T
+          | {
+              title?: T;
+              codeType?: T;
+              code?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              title?: T;
+              address?: T;
+              embedUrl?: T;
+              height?: T;
+              showDirections?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1646,6 +4013,36 @@ export interface AboutPageSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  ourStory?:
+    | T
+    | {
+        subtitle?: T;
+        title?: T;
+        description?: T;
+        timeline?:
+          | T
+          | {
+              year?: T;
+              description?: T;
+              id?: T;
+            };
+        campusImage?: T;
+        missionVisionCards?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+        coreValues?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              description?: T;
+              id?: T;
+            };
+      };
   missionVisionValues?:
     | T
     | {
@@ -1678,6 +4075,209 @@ export interface AboutPageSelect<T extends boolean = true> {
               image?: T;
               alt?: T;
               id?: T;
+            };
+      };
+  contentBlocks?:
+    | T
+    | {
+        video?:
+          | T
+          | {
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
+              title?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              layout?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    company?: T;
+                    avatar?: T;
+                    rating?: T;
+                    testimonial?: T;
+                    id?: T;
+                  };
+              autoplay?: T;
+              showRating?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              style?: T;
+              heading?: T;
+              subheading?: T;
+              image?: T;
+              backgroundImage?: T;
+              primaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              secondaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              backgroundColor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              stats?:
+                | T
+                | {
+                    number?: T;
+                    label?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              animateNumbers?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              openFirst?: T;
+              id?: T;
+              blockName?: T;
+            };
+        form?:
+          | T
+          | {
+              formType?: T;
+              title?: T;
+              description?: T;
+              submitButtonText?: T;
+              successMessage?: T;
+              formFields?:
+                | T
+                | {
+                    fieldName?: T;
+                    fieldLabel?: T;
+                    fieldType?: T;
+                    required?: T;
+                    placeholder?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        countdown?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              targetDate?: T;
+              endMessage?: T;
+              showDays?: T;
+              showHours?: T;
+              showMinutes?: T;
+              showSeconds?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        socialFeed?:
+          | T
+          | {
+              title?: T;
+              platform?: T;
+              username?: T;
+              embedCode?: T;
+              postLimit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        customCode?:
+          | T
+          | {
+              title?: T;
+              codeType?: T;
+              code?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              title?: T;
+              address?: T;
+              embedUrl?: T;
+              height?: T;
+              showDirections?: T;
+              id?: T;
+              blockName?: T;
             };
       };
   updatedAt?: T;
@@ -1768,6 +4368,209 @@ export interface CoursesPageSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  contentBlocks?:
+    | T
+    | {
+        video?:
+          | T
+          | {
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
+              title?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              layout?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    company?: T;
+                    avatar?: T;
+                    rating?: T;
+                    testimonial?: T;
+                    id?: T;
+                  };
+              autoplay?: T;
+              showRating?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              style?: T;
+              heading?: T;
+              subheading?: T;
+              image?: T;
+              backgroundImage?: T;
+              primaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              secondaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              backgroundColor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              stats?:
+                | T
+                | {
+                    number?: T;
+                    label?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              animateNumbers?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              openFirst?: T;
+              id?: T;
+              blockName?: T;
+            };
+        form?:
+          | T
+          | {
+              formType?: T;
+              title?: T;
+              description?: T;
+              submitButtonText?: T;
+              successMessage?: T;
+              formFields?:
+                | T
+                | {
+                    fieldName?: T;
+                    fieldLabel?: T;
+                    fieldType?: T;
+                    required?: T;
+                    placeholder?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        countdown?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              targetDate?: T;
+              endMessage?: T;
+              showDays?: T;
+              showHours?: T;
+              showMinutes?: T;
+              showSeconds?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        socialFeed?:
+          | T
+          | {
+              title?: T;
+              platform?: T;
+              username?: T;
+              embedCode?: T;
+              postLimit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        customCode?:
+          | T
+          | {
+              title?: T;
+              codeType?: T;
+              code?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              title?: T;
+              address?: T;
+              embedUrl?: T;
+              height?: T;
+              showDirections?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1814,6 +4617,209 @@ export interface InstructorsPageSelect<T extends boolean = true> {
                     id?: T;
                   };
               id?: T;
+            };
+      };
+  contentBlocks?:
+    | T
+    | {
+        video?:
+          | T
+          | {
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
+              title?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              layout?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    company?: T;
+                    avatar?: T;
+                    rating?: T;
+                    testimonial?: T;
+                    id?: T;
+                  };
+              autoplay?: T;
+              showRating?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              style?: T;
+              heading?: T;
+              subheading?: T;
+              image?: T;
+              backgroundImage?: T;
+              primaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              secondaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              backgroundColor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              stats?:
+                | T
+                | {
+                    number?: T;
+                    label?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              animateNumbers?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              openFirst?: T;
+              id?: T;
+              blockName?: T;
+            };
+        form?:
+          | T
+          | {
+              formType?: T;
+              title?: T;
+              description?: T;
+              submitButtonText?: T;
+              successMessage?: T;
+              formFields?:
+                | T
+                | {
+                    fieldName?: T;
+                    fieldLabel?: T;
+                    fieldType?: T;
+                    required?: T;
+                    placeholder?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        countdown?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              targetDate?: T;
+              endMessage?: T;
+              showDays?: T;
+              showHours?: T;
+              showMinutes?: T;
+              showSeconds?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        socialFeed?:
+          | T
+          | {
+              title?: T;
+              platform?: T;
+              username?: T;
+              embedCode?: T;
+              postLimit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        customCode?:
+          | T
+          | {
+              title?: T;
+              codeType?: T;
+              code?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              title?: T;
+              address?: T;
+              embedUrl?: T;
+              height?: T;
+              showDirections?: T;
+              id?: T;
+              blockName?: T;
             };
       };
   updatedAt?: T;
@@ -1873,182 +4879,239 @@ export interface PricingPageSelect<T extends boolean = true> {
               id?: T;
             };
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog-page_select".
- */
-export interface BlogPageSelect<T extends boolean = true> {
-  sectionName?: T;
-  sectionType?: T;
-  status?: T;
-  pageTitle?:
+  contentBlocks?:
     | T
     | {
-        title?: T;
-        breadcrumbs?:
+        video?:
           | T
           | {
-              label?: T;
-              link?: T;
-              isActive?: T;
-              id?: T;
-            };
-      };
-  blogHero?:
-    | T
-    | {
-        posts?:
-          | T
-          | {
-              image?: T;
-              date?: T;
-              category?: T;
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
               title?: T;
-              link?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
               id?: T;
+              blockName?: T;
             };
-      };
-  blogPosts?:
-    | T
-    | {
-        posts?:
+        imageGallery?:
           | T
           | {
-              image?: T;
-              date?:
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
                 | T
                 | {
-                    day?: T;
-                    month?: T;
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
                   };
-              author?: T;
-              category?: T;
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
               title?: T;
-              link?: T;
+              description?: T;
+              layout?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    company?: T;
+                    avatar?: T;
+                    rating?: T;
+                    testimonial?: T;
+                    id?: T;
+                  };
+              autoplay?: T;
+              showRating?: T;
               id?: T;
+              blockName?: T;
             };
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blog-details-page_select".
- */
-export interface BlogDetailsPageSelect<T extends boolean = true> {
-  sectionName?: T;
-  sectionType?: T;
-  status?: T;
-  pageTitle?:
-    | T
-    | {
-        title?: T;
-        breadcrumbs?:
+        cta?:
           | T
           | {
-              label?: T;
-              link?: T;
-              isActive?: T;
-              id?: T;
-            };
-      };
-  articleHeader?:
-    | T
-    | {
-        categories?:
-          | T
-          | {
-              name?: T;
-              link?: T;
-              id?: T;
-            };
-        title?: T;
-        author?:
-          | T
-          | {
-              image?: T;
-              name?: T;
-              role?: T;
-            };
-        postInfo?:
-          | T
-          | {
-              date?: T;
-              readTime?: T;
-              commentsCount?: T;
-            };
-        featuredImage?: T;
-        tableOfContents?:
-          | T
-          | {
-              label?: T;
-              anchor?: T;
-              id?: T;
-            };
-        tags?:
-          | T
-          | {
-              name?: T;
-              link?: T;
-              id?: T;
-            };
-      };
-  articleContent?:
-    | T
-    | {
-        sections?:
-          | T
-          | {
-              sectionId?: T;
+              style?: T;
               heading?: T;
-              content?: T;
-              hasQuote?: T;
-              quote?:
+              subheading?: T;
+              image?: T;
+              backgroundImage?: T;
+              primaryButton?:
                 | T
                 | {
                     text?: T;
-                    author?: T;
+                    link?: T;
+                    style?: T;
                   };
-              hasImage?: T;
-              image?:
+              secondaryButton?:
                 | T
                 | {
-                    file?: T;
-                    caption?: T;
-                    position?: T;
+                    text?: T;
+                    link?: T;
+                    style?: T;
                   };
+              backgroundColor?: T;
               id?: T;
+              blockName?: T;
             };
-      };
-  comments?:
-    | T
-    | {
-        heading?: T;
-        totalComments?: T;
-        commentThreads?:
+        richText?:
           | T
           | {
-              avatar?: T;
-              authorName?: T;
-              timeAgo?: T;
-              likes?: T;
-              commentText?: T;
-              replies?:
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              stats?:
                 | T
                 | {
-                    avatar?: T;
-                    authorName?: T;
-                    timeAgo?: T;
-                    likes?: T;
-                    commentText?: T;
+                    number?: T;
+                    label?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              animateNumbers?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              openFirst?: T;
+              id?: T;
+              blockName?: T;
+            };
+        form?:
+          | T
+          | {
+              formType?: T;
+              title?: T;
+              description?: T;
+              submitButtonText?: T;
+              successMessage?: T;
+              formFields?:
+                | T
+                | {
+                    fieldName?: T;
+                    fieldLabel?: T;
+                    fieldType?: T;
+                    required?: T;
+                    placeholder?: T;
                     id?: T;
                   };
               id?: T;
+              blockName?: T;
+            };
+        countdown?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              targetDate?: T;
+              endMessage?: T;
+              showDays?: T;
+              showHours?: T;
+              showMinutes?: T;
+              showSeconds?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        socialFeed?:
+          | T
+          | {
+              title?: T;
+              platform?: T;
+              username?: T;
+              embedCode?: T;
+              postLimit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        customCode?:
+          | T
+          | {
+              title?: T;
+              codeType?: T;
+              code?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              title?: T;
+              address?: T;
+              embedUrl?: T;
+              height?: T;
+              showDirections?: T;
+              id?: T;
+              blockName?: T;
             };
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts_select".
+ */
+export interface BlogPostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  shortDescription?: T;
+  featuredImage?: T;
+  category?: T;
+  authorType?: T;
+  authorName?: T;
+  authorImage?: T;
+  authorRole?: T;
+  authorBio?: T;
+  instructor?: T;
+  content?: T;
+  publishedDate?: T;
+  readTime?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  status?: T;
+  metaDescription?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2103,6 +5166,209 @@ export interface ContactPageSelect<T extends boolean = true> {
                     url?: T;
                     id?: T;
                   };
+            };
+      };
+  contentBlocks?:
+    | T
+    | {
+        video?:
+          | T
+          | {
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
+              title?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              layout?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    company?: T;
+                    avatar?: T;
+                    rating?: T;
+                    testimonial?: T;
+                    id?: T;
+                  };
+              autoplay?: T;
+              showRating?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              style?: T;
+              heading?: T;
+              subheading?: T;
+              image?: T;
+              backgroundImage?: T;
+              primaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              secondaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              backgroundColor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              stats?:
+                | T
+                | {
+                    number?: T;
+                    label?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              animateNumbers?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              openFirst?: T;
+              id?: T;
+              blockName?: T;
+            };
+        form?:
+          | T
+          | {
+              formType?: T;
+              title?: T;
+              description?: T;
+              submitButtonText?: T;
+              successMessage?: T;
+              formFields?:
+                | T
+                | {
+                    fieldName?: T;
+                    fieldLabel?: T;
+                    fieldType?: T;
+                    required?: T;
+                    placeholder?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        countdown?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              targetDate?: T;
+              endMessage?: T;
+              showDays?: T;
+              showHours?: T;
+              showMinutes?: T;
+              showSeconds?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        socialFeed?:
+          | T
+          | {
+              title?: T;
+              platform?: T;
+              username?: T;
+              embedCode?: T;
+              postLimit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        customCode?:
+          | T
+          | {
+              title?: T;
+              codeType?: T;
+              code?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              title?: T;
+              address?: T;
+              embedUrl?: T;
+              height?: T;
+              showDirections?: T;
+              id?: T;
+              blockName?: T;
             };
       };
   updatedAt?: T;
@@ -2195,6 +5461,209 @@ export interface EnrollPageSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  contentBlocks?:
+    | T
+    | {
+        video?:
+          | T
+          | {
+              videoType?: T;
+              videoUrl?: T;
+              videoFile?: T;
+              thumbnail?: T;
+              title?: T;
+              description?: T;
+              autoplay?: T;
+              loop?: T;
+              aspectRatio?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              galleryType?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    alt?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              spacing?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              layout?: T;
+              testimonials?:
+                | T
+                | {
+                    name?: T;
+                    role?: T;
+                    company?: T;
+                    avatar?: T;
+                    rating?: T;
+                    testimonial?: T;
+                    id?: T;
+                  };
+              autoplay?: T;
+              showRating?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              style?: T;
+              heading?: T;
+              subheading?: T;
+              image?: T;
+              backgroundImage?: T;
+              primaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              secondaryButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                    style?: T;
+                  };
+              backgroundColor?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              content?: T;
+              width?: T;
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              stats?:
+                | T
+                | {
+                    number?: T;
+                    label?: T;
+                    icon?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              animateNumbers?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              layout?: T;
+              openFirst?: T;
+              id?: T;
+              blockName?: T;
+            };
+        form?:
+          | T
+          | {
+              formType?: T;
+              title?: T;
+              description?: T;
+              submitButtonText?: T;
+              successMessage?: T;
+              formFields?:
+                | T
+                | {
+                    fieldName?: T;
+                    fieldLabel?: T;
+                    fieldType?: T;
+                    required?: T;
+                    placeholder?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        countdown?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              targetDate?: T;
+              endMessage?: T;
+              showDays?: T;
+              showHours?: T;
+              showMinutes?: T;
+              showSeconds?: T;
+              ctaButton?:
+                | T
+                | {
+                    text?: T;
+                    link?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        socialFeed?:
+          | T
+          | {
+              title?: T;
+              platform?: T;
+              username?: T;
+              embedCode?: T;
+              postLimit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        customCode?:
+          | T
+          | {
+              title?: T;
+              codeType?: T;
+              code?: T;
+              height?: T;
+              id?: T;
+              blockName?: T;
+            };
+        map?:
+          | T
+          | {
+              title?: T;
+              address?: T;
+              embedUrl?: T;
+              height?: T;
+              showDirections?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2244,9 +5713,19 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Setting {
   id: string;
+  /**
+   * Enable to use a logo image instead of site name text
+   */
+  useLogo?: boolean | null;
+  /**
+   * Upload your site logo (recommended size: 200x60px)
+   */
+  logo?: (string | null) | Media;
+  /**
+   * Text to display as site name (leave empty to hide)
+   */
   siteName?: string | null;
   siteDescription?: string | null;
-  logo?: (string | null) | Media;
   favicon?: (string | null) | Media;
   contactEmail?: string | null;
   contactPhone?: string | null;
@@ -2292,9 +5771,10 @@ export interface Setting {
  * via the `definition` "settings_select".
  */
 export interface SettingsSelect<T extends boolean = true> {
+  useLogo?: T;
+  logo?: T;
   siteName?: T;
   siteDescription?: T;
-  logo?: T;
   favicon?: T;
   contactEmail?: T;
   contactPhone?: T;

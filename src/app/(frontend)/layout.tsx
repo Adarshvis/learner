@@ -1,10 +1,25 @@
 import React from 'react'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import ScrollHandler from './components/ScrollHandler'
+import { getSettings } from '@/lib/settings'
 
-export const metadata = {
-  description: 'Empowering learners worldwide with quality education and expert instructors.',
-  title: 'Learner - Online Learning Platform',
+export async function generateMetadata() {
+  const settings = await getSettings()
+  
+  const faviconUrl = settings?.favicon && typeof settings.favicon === 'object' && 'url' in settings.favicon
+    ? settings.favicon.url as string
+    : null
+
+  return {
+    title: settings?.defaultMetaTitle || 'Learner - Online Learning Platform',
+    description: settings?.defaultMetaDescription || 'Empowering learners worldwide with quality education and expert instructors.',
+    icons: faviconUrl ? {
+      icon: faviconUrl,
+      shortcut: faviconUrl,
+      apple: faviconUrl,
+    } : undefined,
+  }
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -28,8 +43,15 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
         {/* Main CSS File - This contains the template styling */}
         <link href="/assets/css/main.css" rel="stylesheet" />
+        
+        {/* Prevent horizontal scroll for full-width hero */}
+        <style>{`
+          body { overflow-x: hidden; }
+          .main { overflow-x: hidden; }
+        `}</style>
       </head>
       <body className="index-page">
+        <ScrollHandler />
         <Header />
         <main className="main">{children}</main>
         <Footer />

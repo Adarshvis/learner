@@ -48,4 +48,16 @@ node_modules/
 /test-results/
 /playwright-report/
 /blob-report/
-/playwright/.cache/
+/plimport { blockBuilderPlugin } from './plugins/blockBuilder'
+
+plugins: [
+  blockBuilderPlugin({
+    collections: ['home-page'], // Add blocks to HomePage
+  }),
+]import { blockBuilderPlugin } from './plugins/blockBuilder'
+
+plugins: [
+  blockBuilderPlugin({
+    collections: ['home-page'], // Add blocks to HomePage
+  }),
+]aywright/.cache/

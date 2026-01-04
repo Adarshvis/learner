@@ -2,6 +2,9 @@ import * as React from 'react'
 import Link from 'next/link'
 import { getPageContent } from '../../lib/payload'
 import TestimonialsSlider from './components/TestimonialsSlider'
+import { BlockRenderer } from './components/BlockRenderer'
+import RecentBlogPosts from './components/RecentBlogPosts'
+import FeaturedNews from './components/FeaturedNews'
 
 export default async function CMSHomePage() {
   try {
@@ -38,14 +41,49 @@ export default async function CMSHomePage() {
       )
     }
 
+    // Helper function to render a section based on its type
+    const renderSection = (section: any, index: number) => {
+      // Custom block section - render using BlockRenderer
+      if (section.sectionType === 'custom-block' && section.customBlock) {
+        return <BlockRenderer key={`custom-${section.id || index}`} blocks={section.customBlock} />
+      }
+      
+      // Return null for other sections - they have their own rendering logic below
+      // We'll check after each main section if there's a custom block that should appear next
+      return null
+    }
+
+    // Helper to get custom blocks that should appear after a specific section type
+    const getCustomBlocksAfter = (sectionType: string) => {
+      const currentIndex = sections.findIndex((s: any) => s.sectionType === sectionType)
+      if (currentIndex === -1) return []
+      
+      // Find all custom blocks that appear after this section and before the next major section
+      const customBlocks = []
+      for (let i = currentIndex + 1; i < sections.length; i++) {
+        if (sections[i].sectionType === 'custom-block') {
+          customBlocks.push(sections[i])
+        } else {
+          // Stop when we hit the next major section
+          break
+        }
+      }
+      return customBlocks
+    }
+
     // Find sections by type
     const heroSection = sections.find((section: any) => section.sectionType === 'hero')
+    const ourStorySection = sections.find((section: any) => section.sectionType === 'our-story')
     const featuredCoursesSection = sections.find((section: any) => section.sectionType === 'featured-courses')
     const categoriesSection = sections.find((section: any) => section.sectionType === 'course-categories')
     const instructorsSection = sections.find((section: any) => section.sectionType === 'featured-instructors')
     const testimonialsSection = sections.find((section: any) => section.sectionType === 'testimonials')
+    const featuredNewsSection = sections.find((section: any) => section.sectionType === 'featured-news')
     const blogSection = sections.find((section: any) => section.sectionType === 'blog-posts')
     const ctaSection = sections.find((section: any) => section.sectionType === 'cta')
+
+    // Get section order from database (sections are ordered in CMS)
+    const sectionOrder = sections.map((s: any) => s.sectionType)
 
     return (
       <>
@@ -57,7 +95,9 @@ export default async function CMSHomePage() {
                 <div className="row align-items-center">
                   <div className="col-lg-6">
                     <div className="hero-text">
-                      <h1>{heroSection.hero.title || "Welcome to Learner"}</h1>
+                      <h1>
+                        {heroSection.hero.title || "Welcome to Learner"}
+                      </h1>
                       <p>{heroSection.hero.description || "Learn new skills with our expert courses"}</p>
 
                       {/* Hero Stats */}
@@ -102,22 +142,43 @@ export default async function CMSHomePage() {
 
                   <div className="col-lg-6">
                     <div className="hero-image">
-                      <div className="main-image">
-                        {heroSection.hero.heroImage && (
-                          <img
-                            src={typeof heroSection.hero.heroImage === 'object' ? heroSection.hero.heroImage.url : '/assets/img/education/courses-13.webp'}
-                            alt={heroSection.hero.title}
-                            className="img-fluid"
-                          />
-                        )}
-                        {!heroSection.hero.heroImage && (
+                      {/* Hero Image Carousel */}
+                      {heroSection.hero.heroImages && heroSection.hero.heroImages.length > 0 ? (
+                        <div id="heroCarousel" className="carousel slide main-image pointer-event" data-bs-ride="carousel">
+                          <div className="carousel-indicators">
+                            {heroSection.hero.heroImages.map((_: any, index: number) => (
+                              <button
+                                key={index}
+                                type="button"
+                                data-bs-target="#heroCarousel"
+                                data-bs-slide-to={index}
+                                className={index === 0 ? 'active' : ''}
+                                aria-current={index === 0 ? 'true' : 'false'}
+                                aria-label={`Slide ${index + 1}`}
+                              ></button>
+                            ))}
+                          </div>
+                          <div className="carousel-inner">
+                            {heroSection.hero.heroImages.map((item: any, index: number) => (
+                              <div key={index} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
+                                <img
+                                  src={typeof item.image === 'object' ? item.image.url : '/assets/img/education/courses-13.webp'}
+                                  alt={item.alt || heroSection.hero.title}
+                                  className="d-block w-100"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="main-image">
                           <img
                             src="/assets/img/education/courses-13.webp"
                             alt="Online Learning"
                             className="img-fluid"
                           />
-                        )}
-                      </div>
+                        </div>
+                      )}
 
                       {/* Floating Cards */}
                       {heroSection.hero.floatingCards && (
@@ -151,8 +212,113 @@ export default async function CMSHomePage() {
           </section>
         )}
 
-        {/* Featured Courses Section */}
-        {featuredCoursesSection && featuredCoursesSection.featuredCourses && (
+        {/* Render custom blocks after hero */}
+        {getCustomBlocksAfter('hero').map((section: any, idx: number) => 
+          section.customBlock && <BlockRenderer key={`after-hero-${idx}`} blocks={section.customBlock} />
+        )}
+
+        {/* Our Story Section */}
+        {ourStorySection && ourStorySection.ourStory && (
+          <section id="about" className="about section">
+            <div className="container" data-aos="fade-up" data-aos-delay="100">
+              <div className="row align-items-center g-5">
+                <div className="col-lg-6">
+                  <div className="about-content" data-aos="fade-up" data-aos-delay="200">
+                    {ourStorySection.ourStory.subtitle && <h3>{ourStorySection.ourStory.subtitle}</h3>}
+                    {ourStorySection.ourStory.title && <h2>{ourStorySection.ourStory.title}</h2>}
+                    {ourStorySection.ourStory.description && <p>{ourStorySection.ourStory.description}</p>}
+
+                    {/* Timeline with 3 text points */}
+                    {ourStorySection.ourStory.timelinePoints && ourStorySection.ourStory.timelinePoints.length > 0 && (
+                      <div className="timeline">
+                        {ourStorySection.ourStory.timelinePoints.map((item: any, index: number) => (
+                          <div key={index} className="timeline-item">
+                            <div className="timeline-dot"></div>
+                            <div className="timeline-content">
+                              {item.title && <h4>{item.title}</h4>}
+                              {item.description && <p>{item.description}</p>}
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {/* Button instead of 4th timeline point */}
+                        {(ourStorySection.ourStory.buttonText || ourStorySection.ourStory.buttonLink) && (
+                          <div className="timeline-item">
+                            <div className="timeline-dot"></div>
+                            <div className="timeline-content">
+                              <Link 
+                                href={ourStorySection.ourStory.buttonLink || '/about'} 
+                                className="btn btn-primary"
+                              >
+                                {ourStorySection.ourStory.buttonText || 'Learn More About Us'}
+                              </Link>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="col-lg-6">
+                  <div className="about-image" data-aos="zoom-in" data-aos-delay="300">
+                    {ourStorySection.ourStory.campusImage && (
+                      <img 
+                        src={typeof ourStorySection.ourStory.campusImage === 'object' 
+                          ? ourStorySection.ourStory.campusImage.url 
+                          : ourStorySection.ourStory.campusImage}
+                        alt="Campus" 
+                        className="img-fluid rounded"
+                      />
+                    )}
+
+                    {/* Mission & Vision Cards */}
+                    {ourStorySection.ourStory.missionVisionCards && ourStorySection.ourStory.missionVisionCards.length > 0 && (
+                      <div className="mission-vision" data-aos="fade-up" data-aos-delay="400">
+                        {ourStorySection.ourStory.missionVisionCards.map((card: any, index: number) => (
+                          <div key={index} className={index === 0 ? 'mission' : 'vision'}>
+                            {card.title && <h3>{card.title}</h3>}
+                            {card.description && <p>{card.description}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Core Values */}
+              {ourStorySection.ourStory.coreValues && ourStorySection.ourStory.coreValues.length > 0 && (
+                <div className="row mt-5">
+                  <div className="col-lg-12">
+                    <div className="core-values" data-aos="fade-up" data-aos-delay="500">
+                      <h3 className="text-center mb-4">Core Values</h3>
+                      <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                        {ourStorySection.ourStory.coreValues.map((value: any, index: number) => (
+                          <div key={index} className="col">
+                            <div className="value-card">
+                              <div className="value-icon">
+                                <i className={`bi ${value.icon}`}></i>
+                              </div>
+                              {value.title && <h4>{value.title}</h4>}
+                              {value.description && <p>{value.description}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* REMOVED: Featured Courses Section - not in new layout */}
+        {/* REMOVED: Course Categories Section - not in new layout */}
+
+        {/* 3. Featured Instructors Section */}
+        {instructorsSection && instructorsSection.featuredInstructors && (
           <section id="featured-courses" className="featured-courses section">
             <div className="container section-title">
               <h2>{featuredCoursesSection.featuredCourses.title || "Featured Courses"}</h2>
@@ -163,48 +329,71 @@ export default async function CMSHomePage() {
               <div className="row gy-4">
                 {featuredCoursesSection.featuredCourses.courses && featuredCoursesSection.featuredCourses.courses.map((course: any, index: number) => (
                   <div key={index} className="col-lg-4 col-md-6">
-                    <div className="course-card">
-                      <div className="course-image">
-                        <img 
-                          src={typeof course.image === 'object' ? course.image.url : '/assets/img/education/students-9.webp'} 
-                          alt={course.title} 
-                          className="img-fluid" 
-                        />
-                        {course.badge && <div className={`badge ${course.badge}`}>{course.badge}</div>}
-                        <div className="price-badge">{course.price}</div>
-                      </div>
-                      <div className="course-content">
-                        <div className="course-meta">
-                          <span className="level">{course.level}</span>
-                          <span className="duration">{course.duration}</span>
-                        </div>
-                        <h3><a href="#">{course.title}</a></h3>
-                        <p>{course.description}</p>
-                        <div className="instructor">
+                    <div className="course-card" style={{ height: 'auto' }}>
+                      {course.image && (
+                        <div className="course-image">
                           <img 
-                            src={typeof course.instructorAvatar === 'object' ? course.instructorAvatar.url : '/assets/img/person/person-f-3.webp'} 
-                            alt={course.instructorName} 
-                            className="instructor-img" 
+                            src={typeof course.image === 'object' ? course.image.url : '/assets/img/education/students-9.webp'} 
+                            alt={course.title || 'Course'} 
+                            className="img-fluid" 
                           />
-                          <div className="instructor-info">
-                            <h6>{course.instructorName}</h6>
-                            <span>{course.instructorSpecialty}</span>
-                          </div>
+                          {course.badge && <div className={`badge ${course.badge}`}>{course.badge}</div>}
+                          {course.price && <div className="price-badge">{course.price}</div>}
                         </div>
-                        <div className="course-stats">
-                          <div className="rating">
-                            {Array.from({ length: Math.floor(course.rating || 5) }, (_, i) => (
-                              <i key={i} className="bi bi-star-fill"></i>
-                            ))}
-                            {(course.rating || 5) % 1 !== 0 && <i className="bi bi-star-half"></i>}
-                            <span>({course.rating || 5})</span>
+                      )}
+                      <div className="course-content">
+                        {(course.level || course.duration) && (
+                          <div className="course-meta">
+                            {course.level && <span className="level">{course.level}</span>}
+                            {course.duration && <span className="duration">{course.duration}</span>}
                           </div>
-                          <div className="students">
-                            <i className="bi bi-people-fill"></i>
-                            <span>{course.studentCount} students</span>
+                        )}
+                        {course.title && <h3><a href="#">{course.title}</a></h3>}
+                        {course.description && <p>{course.description}</p>}
+                        {(course.instructorAvatar || course.instructorName || course.instructorSpecialty) && (
+                          <div className="instructor">
+                            {course.instructorAvatar && (
+                              <img 
+                                src={typeof course.instructorAvatar === 'object' ? course.instructorAvatar.url : '/assets/img/person/person-f-3.webp'} 
+                                alt={course.instructorName || 'Instructor'} 
+                                className="instructor-img" 
+                              />
+                            )}
+                            {(course.instructorName || course.instructorSpecialty) && (
+                              <div className="instructor-info">
+                                {course.instructorName && <h6>{course.instructorName}</h6>}
+                                {course.instructorSpecialty && <span>{course.instructorSpecialty}</span>}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                        <a href="/enroll" className="btn-course">Enroll Now</a>
+                        )}
+                        {(course.rating || course.studentCount) && (
+                          <div className="course-stats">
+                            {course.rating && (
+                              <div className="rating">
+                                {Array.from({ length: Math.floor(course.rating) }, (_, i) => (
+                                  <i key={i} className="bi bi-star-fill"></i>
+                                ))}
+                                {course.rating % 1 !== 0 && <i className="bi bi-star-half"></i>}
+                                <span>({course.rating})</span>
+                              </div>
+                            )}
+                            {course.studentCount && (
+                              <div className="students">
+                                <i className="bi bi-people-fill"></i>
+                                <span>{course.studentCount} students</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {(course.buttonText || course.buttonLink) && (
+                          <a 
+                            href={course.buttonLink || '#'} 
+                            className="btn-course"
+                          >
+                            {course.buttonText || 'Enroll Now'}
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -223,31 +412,12 @@ export default async function CMSHomePage() {
           </section>
         )}
 
-        {/* Course Categories Section */}
-        {categoriesSection && categoriesSection.courseCategories && (
-          <section id="course-categories" className="course-categories section">
-            <div className="container section-title">
-              <h2>{categoriesSection.courseCategories.title || "Course Categories"}</h2>
-              <p>{categoriesSection.courseCategories.description || "Explore our diverse course categories"}</p>
-            </div>
-
-            <div className="container">
-              <div className="row g-4">
-                {categoriesSection.courseCategories.categories && categoriesSection.courseCategories.categories.map((category: any, index: number) => (
-                  <div key={index} className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
-                    <a href={category.link || '/courses'} className="category-card category-tech">
-                      <div className="category-icon">
-                        <i className={`bi ${category.icon}`}></i>
-                      </div>
-                      <h5>{category.name}</h5>
-                      <span className="course-count">{category.courseCount} Courses</span>
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+        {/* Render custom blocks after featured courses */}
+        {getCustomBlocksAfter('featured-courses').map((section: any, idx: number) => 
+          section.customBlock && <BlockRenderer key={`after-courses-${idx}`} blocks={section.customBlock} />
         )}
+
+        {/* REMOVED: Course Categories Section */}
 
         {/* Featured Instructors Section */}
         {instructorsSection && instructorsSection.featuredInstructors && (
@@ -263,50 +433,76 @@ export default async function CMSHomePage() {
                 {instructorsSection.featuredInstructors.instructors && instructorsSection.featuredInstructors.instructors.map((instructor: any, index: number) => (
                   <div key={index} className="col-xl-3 col-lg-4 col-md-6">
                     <div className="instructor-card">
-                      <div className="instructor-image">
-                        <img 
-                          src={typeof instructor.image === 'object' ? instructor.image.url : '/assets/img/education/teacher-2.webp'} 
-                          className="img-fluid" 
-                          alt={instructor.name} 
-                        />
-                        <div className="overlay-content">
-                          <div className="rating-stars">
-                            {Array.from({ length: Math.floor(instructor.rating || 5) }, (_, i) => (
-                              <i key={i} className="bi bi-star-fill"></i>
-                            ))}
-                            {(instructor.rating || 5) % 1 !== 0 && <i className="bi bi-star-half"></i>}
-                            <span>{instructor.rating || 5}</span>
-                          </div>
-                          <div className="course-count">
-                            <i className="bi bi-play-circle"></i>
-                            <span>{instructor.courseCount} Courses</span>
-                          </div>
+                      {instructor.image && (
+                        <div className="instructor-image">
+                          <img 
+                            src={typeof instructor.image === 'object' ? instructor.image.url : '/assets/img/education/teacher-2.webp'} 
+                            className="img-fluid" 
+                            alt={instructor.name || 'Instructor'} 
+                          />
+                          {(instructor.rating || instructor.courseCount) && (
+                            <div className="overlay-content">
+                              {instructor.rating && (
+                                <div className="rating-stars">
+                                  {Array.from({ length: Math.floor(instructor.rating) }, (_, i) => (
+                                    <i key={i} className="bi bi-star-fill"></i>
+                                  ))}
+                                  {instructor.rating % 1 !== 0 && <i className="bi bi-star-half"></i>}
+                                  <span>{instructor.rating}</span>
+                                </div>
+                              )}
+                              {instructor.courseCount && (
+                                <div className="course-count">
+                                  <i className="bi bi-play-circle"></i>
+                                  <span>{instructor.courseCount} Courses</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      )}
                       <div className="instructor-info">
-                        <h5>{instructor.name}</h5>
-                        <p className="specialty">{instructor.specialty}</p>
-                        <p className="description">{instructor.description}</p>
-                        <div className="stats-grid">
-                          <div className="stat">
-                            <span className="number">{instructor.studentCount}</span>
-                            <span className="label">Students</span>
+                        {instructor.name && <h5>{instructor.name}</h5>}
+                        {instructor.description && <p className="description">{instructor.description}</p>}
+                        {(instructor.studentCount || instructor.rating) && (
+                          <div className="stats-grid">
+                            {instructor.studentCount && (
+                              <div className="stat">
+                                <span className="number">{instructor.studentCount}</span>
+                                <span className="label">Students</span>
+                              </div>
+                            )}
+                            {instructor.rating && (
+                              <div className="stat">
+                                <span className="number">{instructor.rating}</span>
+                                <span className="label">Rating</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="stat">
-                            <span className="number">{instructor.rating || 5}</span>
-                            <span className="label">Rating</span>
-                          </div>
-                        </div>
-                        <div className="action-buttons">
-                          <a href="#" className="btn-view">View Profile</a>
-                          <div className="social-links">
-                            {instructor.socialLinks && instructor.socialLinks.map((social: any, socialIndex: number) => (
-                              <a key={socialIndex} href={social.url} target="_blank">
-                                <i className={`bi bi-${social.platform}`}></i>
+                        )}
+                        {(instructor.profileLink || instructor.profileButtonText || instructor.socialLinks) && (
+                          <div className="action-buttons">
+                            {(instructor.profileLink || instructor.profileButtonText) && (
+                              <a 
+                                href={instructor.profileLink || '#'} 
+                                className="btn-view"
+                              >
+                                {instructor.profileButtonText || 'View Profile'}
                               </a>
-                            ))}
+                            )}
+                            {instructor.socialLinks && instructor.socialLinks.length > 0 && (
+                              <div className="social-links">
+                                {instructor.socialLinks.map((social: any, socialIndex: number) => (
+                                  social.url && (
+                                    <a key={socialIndex} href={social.url} target="_blank" rel="noopener noreferrer">
+                                      <i className={`bi bi-${social.platform}`}></i>
+                                    </a>
+                                  )
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -314,6 +510,11 @@ export default async function CMSHomePage() {
               </div>
             </div>
           </section>
+        )}
+
+        {/* Render custom blocks after instructors */}
+        {getCustomBlocksAfter('featured-instructors').map((section: any, idx: number) => 
+          section.customBlock && <BlockRenderer key={`after-instructors-${idx}`} blocks={section.customBlock} />
         )}
 
         {/* Testimonials Section */}
@@ -365,49 +566,30 @@ export default async function CMSHomePage() {
           </section>
         )}
 
-        {/* Recent Blog Posts Section */}
-        {blogSection && blogSection.blogPosts && (
-          <section id="recent-blog-posts" className="recent-blog-posts section">
-            {/* Section Title */}
-            <div className="container section-title" data-aos="fade-up">
-              <h2>{blogSection.blogPosts.title || "Recent Blog Posts"}</h2>
-              <p>{blogSection.blogPosts.description || "Stay updated with our latest insights"}</p>
-            </div>{/* End Section Title */}
+        {/* Render custom blocks after testimonials */}
+        {getCustomBlocksAfter('testimonials').map((section: any, idx: number) => 
+          section.customBlock && <BlockRenderer key={`after-testimonials-${idx}`} blocks={section.customBlock} />
+        )}
 
-            <div className="container" data-aos="fade-up" data-aos-delay="100">
-              <div className="row gy-4">
-                {blogSection.blogPosts.posts && blogSection.blogPosts.posts.map((post: any, index: number) => (
-                  <div key={index} className="col-lg-4" data-aos="fade-up" data-aos-delay={(index + 2) * 100}>
-                    <div className="card">
-                      <div className="card-top d-flex align-items-center">
-                        <img 
-                          src={typeof post.authorAvatar === 'object' ? post.authorAvatar.url : '/assets/img/person/person-f-12.webp'} 
-                          alt="Author" 
-                          className="rounded-circle me-2"
-                        />
-                        <span className="author-name">By {post.authorName}</span>
-                        <span className="ms-auto likes">
-                          <i className="bi bi-heart"></i> {post.likes}
-                        </span>
-                      </div>
-                      <div className="card-img-wrapper">
-                        <img 
-                          src={typeof post.image === 'object' ? post.image.url : '/assets/img/blog/blog-post-1.webp'} 
-                          alt="Post Image"
-                        />
-                      </div>
-                      <div className="card-body">
-                        <h5 className="card-title">
-                          <a href={post.link}>{post.title}</a>
-                        </h5>
-                        <p className="card-text">{post.excerpt}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+        {/* Featured News Section */}
+        {featuredNewsSection && (
+          <FeaturedNews 
+            title={featuredNewsSection.featuredNews?.title}
+            description={featuredNewsSection.featuredNews?.description}
+          />
+        )}
+
+        {/* Render custom blocks after featured news */}
+        {getCustomBlocksAfter('featured-news').map((section: any, idx: number) => 
+          section.customBlock && <BlockRenderer key={`after-featured-news-${idx}`} blocks={section.customBlock} />
+        )}
+
+        {/* Recent Blog Posts Section */}
+        <RecentBlogPosts />
+
+        {/* Render custom blocks after blog posts */}
+        {getCustomBlocksAfter('blog-posts').map((section: any, idx: number) => 
+          section.customBlock && <BlockRenderer key={`after-blog-${idx}`} blocks={section.customBlock} />
         )}
 
         {/* CTA Section */}
@@ -503,7 +685,7 @@ export default async function CMSHomePage() {
       </>
     )
   } catch (error) {
-    console.error('Error fetching home page content:', error)
+    // Return empty sections on error
     return (
       <div className="container py-5">
         <div className="text-center">

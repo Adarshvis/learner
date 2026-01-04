@@ -231,7 +231,7 @@ export default async function CMSCoursesPage() {
       </>
     )
   } catch (error) {
-    console.error('Error fetching courses page content:', error)
+    // Return empty sections on error
     return (
       <div className="container py-5">
         <div className="text-center">

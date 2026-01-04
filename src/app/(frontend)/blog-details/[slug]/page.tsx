@@ -8,5 +8,6 @@ interface BlogDetailsProps {
 
 export default async function BlogDetailsPage({ params }: BlogDetailsProps) {
   const { slug } = await params
+  
   return <CMSBlogDetailsPage slug={slug} />
 }

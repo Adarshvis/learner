@@ -26,6 +26,7 @@ export const AboutPage: CollectionConfig = {
       options: [
         { label: 'Page Title', value: 'page-title' },
         { label: 'About Main Section', value: 'about-main' },
+        { label: 'Our Story', value: 'our-story' },
         { label: 'Mission Vision Values', value: 'mission-vision-values' },
         { label: 'Why Choose Us', value: 'why-choose-us' },
       ],
@@ -125,6 +126,121 @@ export const AboutPage: CollectionConfig = {
             {
               name: 'label',
               type: 'text',
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
+
+    // OUR STORY SECTION
+    {
+      name: 'ourStory',
+      type: 'group',
+      admin: {
+        condition: (data) => data.sectionType === 'our-story',
+      },
+      fields: [
+        {
+          name: 'subtitle',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'e.g., "Our Story"',
+          },
+        },
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'e.g., "Educating Minds, Inspiring Hearts"',
+          },
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          required: true,
+        },
+        {
+          name: 'timeline',
+          type: 'array',
+          label: 'Timeline Items',
+          fields: [
+            {
+              name: 'year',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'e.g., "1965", "1982"',
+              },
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              required: true,
+            },
+          ],
+        },
+        {
+          name: 'campusImage',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          admin: {
+            description: 'Main campus/building image',
+          },
+        },
+        {
+          name: 'missionVisionCards',
+          type: 'array',
+          label: 'Mission & Vision Cards',
+          minRows: 2,
+          maxRows: 2,
+          fields: [
+            {
+              name: 'title',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'e.g., "Our Mission", "Our Vision"',
+              },
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              required: true,
+            },
+          ],
+        },
+        {
+          name: 'coreValues',
+          type: 'array',
+          label: 'Core Values',
+          fields: [
+            {
+              name: 'icon',
+              type: 'select',
+              required: true,
+              options: [
+                { label: 'Book (Academic Excellence)', value: 'bi-book' },
+                { label: 'People (Community)', value: 'bi-people' },
+                { label: 'Lightbulb (Innovation)', value: 'bi-lightbulb' },
+                { label: 'Globe (Global Perspective)', value: 'bi-globe' },
+                { label: 'Award', value: 'bi-award' },
+                { label: 'Heart', value: 'bi-heart' },
+                { label: 'Star', value: 'bi-star' },
+                { label: 'Shield', value: 'bi-shield' },
+              ],
+            },
+            {
+              name: 'title',
+              type: 'text',
+              required: true,
+            },
+            {
+              name: 'description',
+              type: 'textarea',
               required: true,
             },
           ],

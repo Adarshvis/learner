@@ -21,6 +21,7 @@ export default async function CMSAboutPage() {
     // Find different sections using correct section types
     const pageTitleSection = aboutPageContent.find((section: any) => section.sectionType === 'page-title')
     const aboutMainSection = aboutPageContent.find((section: any) => section.sectionType === 'about-main')
+    const ourStorySection = aboutPageContent.find((section: any) => section.sectionType === 'our-story')
     const missionVisionSection = aboutPageContent.find((section: any) => section.sectionType === 'mission-vision-values')
     const whyChooseUsSection = aboutPageContent.find((section: any) => section.sectionType === 'why-choose-us')
     
@@ -157,8 +158,90 @@ export default async function CMSAboutPage() {
           </section>
         )}
 
+        {/* Our Story Section */}
+        {ourStorySection && ourStorySection.ourStory && (
+          <section id="about" className="about section">
+            <div className="container" data-aos="fade-up" data-aos-delay="100">
+              <div className="row align-items-center g-5">
+                <div className="col-lg-6">
+                  <div className="about-content" data-aos="fade-up" data-aos-delay="200">
+                    <h3>{ourStorySection.ourStory.subtitle}</h3>
+                    <h2>{ourStorySection.ourStory.title}</h2>
+                    <p>{ourStorySection.ourStory.description}</p>
+
+                    {/* Timeline */}
+                    {ourStorySection.ourStory.timeline && (
+                      <div className="timeline">
+                        {ourStorySection.ourStory.timeline.map((item: any, index: number) => (
+                          <div key={index} className="timeline-item">
+                            <div className="timeline-dot"></div>
+                            <div className="timeline-content">
+                              <h4>{item.year}</h4>
+                              <p>{item.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="col-lg-6">
+                  <div className="about-image" data-aos="zoom-in" data-aos-delay="300">
+                    {ourStorySection.ourStory.campusImage && (
+                      <img 
+                        src={typeof ourStorySection.ourStory.campusImage === 'object' 
+                          ? ourStorySection.ourStory.campusImage.url 
+                          : ourStorySection.ourStory.campusImage}
+                        alt="Campus" 
+                        className="img-fluid rounded"
+                      />
+                    )}
+
+                    {/* Mission & Vision Cards */}
+                    {ourStorySection.ourStory.missionVisionCards && (
+                      <div className="mission-vision" data-aos="fade-up" data-aos-delay="400">
+                        {ourStorySection.ourStory.missionVisionCards.map((card: any, index: number) => (
+                          <div key={index} className={index === 0 ? 'mission' : 'vision'}>
+                            <h3>{card.title}</h3>
+                            <p>{card.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Core Values */}
+              {ourStorySection.ourStory.coreValues && (
+                <div className="row mt-5">
+                  <div className="col-lg-12">
+                    <div className="core-values" data-aos="fade-up" data-aos-delay="500">
+                      <h3 className="text-center mb-4">Core Values</h3>
+                      <div className="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                        {ourStorySection.ourStory.coreValues.map((value: any, index: number) => (
+                          <div key={index} className="col">
+                            <div className="value-card">
+                              <div className="value-icon">
+                                <i className={`bi ${value.icon}`}></i>
+                              </div>
+                              <h4>{value.title}</h4>
+                              <p>{value.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* Fallback when no content */}
-        {!aboutMainSection && !missionVisionSection && !whyChooseUsSection && (
+        {!aboutMainSection && !ourStorySection && !missionVisionSection && !whyChooseUsSection && (
           <div className="container py-5">
             <div className="text-center">
               <h2>About Us</h2>
@@ -170,7 +253,7 @@ export default async function CMSAboutPage() {
       </>
     )
   } catch (error) {
-    console.error('Error fetching about page content:', error)
+    // Return empty sections on error
     return (
       <div className="container py-5">
         <div className="text-center">

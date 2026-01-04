@@ -2,9 +2,36 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+interface PageStatus {
+  about: boolean
+  courses: boolean
+  instructors: boolean
+  news: boolean
+  blog: boolean
+  contact: boolean
+  enroll: boolean
+}
 
 export default function HeaderNav() {
   const pathname = usePathname()
+  const [pageStatus, setPageStatus] = useState<PageStatus>({
+    about: true,
+    courses: true,
+    instructors: true,
+    news: true,
+    blog: true,
+    contact: true,
+    enroll: true,
+  })
+
+  useEffect(() => {
+    fetch('/api/page-status')
+      .then((res) => res.json())
+      .then((data) => setPageStatus(data))
+      .catch((error) => console.error('Error fetching page status:', error))
+  }, [])
 
   return (
     <nav id="navmenu" className="navmenu">
@@ -14,31 +41,41 @@ export default function HeaderNav() {
             Home
           </Link>
         </li>
-        <li>
-          <Link href="/about" className={pathname === '/about' ? 'active' : ''}>
-            About
-          </Link>
-        </li>
-        <li>
-          <Link href="/courses" className={pathname === '/courses' ? 'active' : ''}>
-            Courses
-          </Link>
-        </li>
-        <li>
-          <Link href="/instructors" className={pathname === '/instructors' ? 'active' : ''}>
-            Instructors
-          </Link>
-        </li>
-        <li>
-          <Link href="/pricing" className={pathname === '/pricing' ? 'active' : ''}>
-            Pricing
-          </Link>
-        </li>
-        <li>
-          <Link href="/blog" className={pathname === '/blog' ? 'active' : ''}>
-            Blog
-          </Link>
-        </li>
+        {pageStatus.about && (
+          <li>
+            <Link href="/about" className={pathname === '/about' ? 'active' : ''}>
+              About
+            </Link>
+          </li>
+        )}
+        {pageStatus.courses && (
+          <li>
+            <Link href="/courses" className={pathname === '/courses' ? 'active' : ''}>
+              Courses
+            </Link>
+          </li>
+        )}
+        {pageStatus.instructors && (
+          <li>
+            <Link href="/instructors" className={pathname === '/instructors' ? 'active' : ''}>
+              Instructors
+            </Link>
+          </li>
+        )}
+        {pageStatus.news && (
+          <li>
+            <Link href="/news" className={pathname === '/news' ? 'active' : ''}>
+              News
+            </Link>
+          </li>
+        )}
+        {pageStatus.blog && (
+          <li>
+            <Link href="/blog" className={pathname === '/blog' ? 'active' : ''}>
+              Blog
+            </Link>
+          </li>
+        )}
         <li className="dropdown">
           <a href="#">
             <span>More Pages</span> <i className="bi bi-chevron-down toggle-dropdown"></i>
@@ -109,11 +146,13 @@ export default function HeaderNav() {
             </li>
           </ul>
         </li>
-        <li>
-          <Link href="/contact" className={pathname === '/contact' ? 'active' : ''}>
-            Contact
-          </Link>
-        </li>
+        {pageStatus.contact && (
+          <li>
+            <Link href="/contact" className={pathname === '/contact' ? 'active' : ''}>
+              Contact
+            </Link>
+          </li>
+        )}
       </ul>
       <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>

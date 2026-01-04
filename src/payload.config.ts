@@ -4,19 +4,22 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
-import { Users } from './collections/Users'
-import { Media } from './collections/Media'
-import { PageContent } from './collections/PageContent'
-import { HomePage } from './collections/HomePage'
-import { AboutPage } from './collections/AboutPage'
-import { CoursesPage } from './collections/CoursesPage'
-import { InstructorsPage } from './collections/InstructorsPage'
-import { PricingPage } from './collections/PricingPage'
-import { BlogPage } from './collections/BlogPage'
-import { BlogDetailsPage } from './collections/BlogDetailsPage'
-import { ContactPage } from './collections/ContactPage'
-import { EnrollPage } from './collections/EnrollPage'
-import { Settings } from './globals/Settings'
+import { Users } from './collections/Users.ts'
+import { Media } from './collections/Media.ts'
+import { PageContent } from './collections/PageContent.ts'
+import { HomePage } from './collections/HomePage.ts'
+import { AboutPage } from './collections/AboutPage.ts'
+import { CoursesPage } from './collections/CoursesPage.ts'
+import { InstructorsPage } from './collections/InstructorsPage.ts'
+import { News } from './collections/News.ts'
+import { NewsPage } from './collections/NewsPage.ts'
+import { ResearchDomains } from './collections/ResearchDomains.ts'
+import { WorkWithUs } from './collections/WorkWithUs.ts'
+import { BlogPosts } from './collections/BlogPosts.ts'
+import { ContactPage } from './collections/ContactPage.ts'
+import { EnrollPage } from './collections/EnrollPage.ts'
+import { Settings } from './globals/Settings.ts'
+import { blockBuilderPlugin } from './plugins/blockBuilder/index.ts'
 
 export default buildConfig({
   admin: {
@@ -30,13 +33,14 @@ export default buildConfig({
     AboutPage,
     CoursesPage,
     InstructorsPage,
-    PricingPage,
-    BlogPage,
-    BlogDetailsPage,
+    News,
+    NewsPage,
+    ResearchDomains,
+    WorkWithUs,
+    BlogPosts,
     ContactPage,
-    EnrollPage
   ],
-  globals: [Settings],
+  globals: [Settings, EnrollPage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -48,5 +52,31 @@ export default buildConfig({
   sharp,
   plugins: [
     // storage-adapter-placeholder
+    blockBuilderPlugin({
+      // Add content blocks to all page collections
+      collections: [
+        'home-page',
+        'about-page',
+        'courses-page',
+        'instructors-page',
+        'news-page',
+        'contact-page',
+      ],
+      // Optional: Customize which blocks are available
+      enabledBlocks: {
+        video: true,
+        imageGallery: true,
+        testimonials: true,
+        cta: true,
+        richText: true,
+        stats: true,
+        faq: true,
+        form: true,
+        countdown: true,
+        socialFeed: true,
+        customCode: true,
+        map: true,
+      },
+    }),
   ],
 })
