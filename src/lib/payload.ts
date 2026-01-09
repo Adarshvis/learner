@@ -16,13 +16,9 @@ export async function getFeaturedCourses() {
   try {
     const payload = await getPayloadInstance()
     const courses = await payload.find({
-      collection: 'page-content',
+      collection: 'courses-page',
       where: {
-        and: [
-          { contentType: { equals: 'course' } },
-          { featured: { equals: true } },
-          { status: { equals: 'published' } }
-        ]
+        status: { equals: 'active' }
       },
       limit: 6,
       overrideAccess: true,
@@ -38,13 +34,9 @@ export async function getFeaturedInstructors() {
   try {
     const payload = await getPayloadInstance()
     const instructors = await payload.find({
-      collection: 'page-content',
+      collection: 'instructors-page',
       where: {
-        and: [
-          { contentType: { equals: 'instructor' } },
-          { featured: { equals: true } },
-          { status: { equals: 'active' } }
-        ]
+        status: { equals: 'active' }
       },
       limit: 4,
       overrideAccess: true,
@@ -60,13 +52,9 @@ export async function getFeaturedBlogPosts() {
   try {
     const payload = await getPayloadInstance()
     const posts = await payload.find({
-      collection: 'page-content',
+      collection: 'blog-posts',
       where: {
-        and: [
-          { contentType: { equals: 'blog-post' } },
-          { featured: { equals: true } },
-          { status: { equals: 'published' } }
-        ]
+        status: { equals: 'published' }
       },
       limit: 3,
       overrideAccess: true,
@@ -79,25 +67,9 @@ export async function getFeaturedBlogPosts() {
 }
 
 export async function getFeaturedTestimonials() {
-  try {
-    const payload = await getPayloadInstance()
-    const testimonials = await payload.find({
-      collection: 'page-content',
-      where: {
-        and: [
-          { contentType: { equals: 'testimonial' } },
-          { featured: { equals: true } },
-          { status: { equals: 'approved' } }
-        ]
-      },
-      limit: 5,
-      overrideAccess: true,
-    })
-    return testimonials.docs
-  } catch (error) {
-    console.error('Error fetching featured testimonials:', error)
-    return []
-  }
+  // Testimonials would come from a dedicated collection if needed
+  // For now return empty array
+  return []
 }
 
 export async function getPageContent(pageName: string, section?: string) {

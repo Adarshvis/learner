@@ -1,0 +1,168 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+interface MenuItem {
+  id?: string
+  label: string
+  linkType: 'internal' | 'external' | 'anchor' | 'dropdown' | 'custom'
+  internalLink?: string
+  customLink?: string
+  dynamicPageLink?: { slug: string } | string | null
+  externalUrl?: string
+  anchorLink?: string
+  openInNewTab?: boolean
+  isVisible?: boolean
+  icon?: string
+  highlight?: boolean
+  children?: MenuItem[]
+}
+
+interface NavigationData {
+  menuItems?: MenuItem[]
+  ctaButton?: {
+    isVisible?: boolean
+    text?: string
+    linkType?: 'internal' | 'external'
+    internalLink?: string
+    externalUrl?: string
+    openInNewTab?: boolean
+  }
+}
+
+interface CMSNavigationProps {
+  navigation: NavigationData | null
+}
+
+export default function CMSNavigation({ navigation }: CMSNavigationProps) {
+  const pathname = usePathname()
+
+  // Get the link URL for a menu item
+  const getMenuLink = (item: MenuItem): string => {
+    if (item.linkType === 'external' && item.externalUrl) {
+      return item.externalUrl
+    }
+    if (item.linkType === 'anchor' && item.anchorLink) {
+      return item.anchorLink
+    }
+    if (item.linkType === 'dropdown') {
+      return '#'
+    }
+    // Check for custom link (used by dynamic pages)
+    if (item.linkType === 'custom' && item.customLink) {
+      return item.customLink
+    }
+    // Check for dynamic page link
+    if (item.dynamicPageLink) {
+      const slug = typeof item.dynamicPageLink === 'object' 
+        ? item.dynamicPageLink.slug 
+        : item.dynamicPageLink
+      return `/${slug}`
+    }
+    // Fall back to internal link
+    return item.internalLink || '/'
+  }
+
+  // Check if a menu item is active
+  const isActive = (item: MenuItem): boolean => {
+    const link = getMenuLink(item)
+    if (link === '/') return pathname === '/'
+    return pathname.startsWith(link)
+  }
+
+  // Render a single menu item
+  const renderMenuItem = (item: MenuItem, index: number) => {
+    if (item.isVisible === false) return null
+
+    const link = getMenuLink(item)
+    const hasChildren = item.children && item.children.length > 0
+    const isDropdown = item.linkType === 'dropdown' || hasChildren
+
+    if (isDropdown) {
+      return (
+        <li key={item.id || index} className="dropdown">
+          <a href={link}>
+            {item.icon && <i className={`bi ${item.icon} me-1`}></i>}
+            <span>{item.label}</span>
+            <i className="bi bi-chevron-down toggle-dropdown"></i>
+          </a>
+          {hasChildren && (
+            <ul>
+              {item.children!.filter(child => child.isVisible !== false).map((child, childIndex) => (
+                <li key={child.id || childIndex}>
+                  {child.linkType === 'external' ? (
+                    <a 
+                      href={child.externalUrl || '#'}
+                      target={child.openInNewTab ? '_blank' : undefined}
+                      rel={child.openInNewTab ? 'noopener noreferrer' : undefined}
+                    >
+                      {child.icon && <i className={`bi ${child.icon} me-1`}></i>}
+                      {child.label}
+                    </a>
+                  ) : (
+                    <Link href={getMenuLink(child)}>
+                      {child.icon && <i className={`bi ${child.icon} me-1`}></i>}
+                      {child.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      )
+    }
+
+    // Regular menu item
+    if (item.linkType === 'external') {
+      return (
+        <li key={item.id || index}>
+          <a
+            href={link}
+            target={item.openInNewTab ? '_blank' : undefined}
+            rel={item.openInNewTab ? 'noopener noreferrer' : undefined}
+            className={item.highlight ? 'highlight' : ''}
+          >
+            {item.icon && <i className={`bi ${item.icon} me-1`}></i>}
+            {item.label}
+          </a>
+        </li>
+      )
+    }
+
+    return (
+      <li key={item.id || index}>
+        <Link
+          href={link}
+          className={`${isActive(item) ? 'active' : ''} ${item.highlight ? 'highlight' : ''}`}
+        >
+          {item.icon && <i className={`bi ${item.icon} me-1`}></i>}
+          {item.label}
+        </Link>
+      </li>
+    )
+  }
+
+  // Fallback menu if no navigation data
+  const fallbackMenu = [
+    { label: 'Home', linkType: 'internal' as const, internalLink: '/', isVisible: true },
+    { label: 'About', linkType: 'internal' as const, internalLink: '/about', isVisible: true },
+    { label: 'Courses', linkType: 'internal' as const, internalLink: '/courses', isVisible: true },
+    { label: 'Instructors', linkType: 'internal' as const, internalLink: '/instructors', isVisible: true },
+    { label: 'News', linkType: 'internal' as const, internalLink: '/news', isVisible: true },
+    { label: 'Blog', linkType: 'internal' as const, internalLink: '/blog', isVisible: true },
+    { label: 'Contact', linkType: 'internal' as const, internalLink: '/contact', isVisible: true },
+  ]
+
+  const menuItems = navigation?.menuItems?.length ? navigation.menuItems : fallbackMenu
+
+  return (
+    <nav id="navmenu" className="navmenu">
+      <ul>
+        {menuItems.map((item, index) => renderMenuItem(item, index))}
+      </ul>
+      <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+  )
+}

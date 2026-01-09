@@ -2,15 +2,29 @@ import type { CollectionConfig } from 'payload'
 
 export const AboutPage: CollectionConfig = {
   slug: 'about-page',
+  labels: {
+    singular: 'About Page',
+    plural: 'About Page',
+  },
   admin: {
     useAsTitle: 'sectionName',
     defaultColumns: ['sectionName', 'sectionType', 'updatedAt'],
     group: 'Content Management',
+    description: 'Manage about page sections.',
   },
   access: {
     read: () => true,
   },
   fields: [
+    {
+      name: 'order',
+      type: 'number',
+      required: false,
+      defaultValue: 0,
+      admin: {
+        hidden: true,
+      },
+    },
     {
       name: 'sectionName',
       type: 'text',

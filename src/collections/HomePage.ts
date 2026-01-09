@@ -2,10 +2,15 @@ import type { CollectionConfig } from 'payload'
 
 export const HomePage: CollectionConfig = {
   slug: 'home-page',
+  labels: {
+    singular: 'Home Page',
+    plural: 'Home Page',
+  },
   admin: {
     useAsTitle: 'sectionName',
-    defaultColumns: ['order', 'sectionName', 'sectionType', 'updatedAt'],
+    defaultColumns: ['sectionName', 'sectionType', 'updatedAt'],
     group: 'Content Management',
+    description: 'Manage home page sections. Use the order field to control display order.',
   },
   access: {
     read: () => true,
@@ -14,11 +19,10 @@ export const HomePage: CollectionConfig = {
     {
       name: 'order',
       type: 'number',
-      required: true,
+      required: false,
       defaultValue: 0,
       admin: {
-        description: 'Set the display order (lower numbers appear first: 1, 2, 3...)',
-        position: 'sidebar',
+        hidden: true,
       },
     },
     {

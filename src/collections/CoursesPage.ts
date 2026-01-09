@@ -2,15 +2,29 @@ import type { CollectionConfig } from 'payload'
 
 export const CoursesPage: CollectionConfig = {
   slug: 'courses-page',
+  labels: {
+    singular: 'Courses Page',
+    plural: 'Courses Page',
+  },
   admin: {
     useAsTitle: 'sectionName',
     defaultColumns: ['sectionName', 'sectionType', 'updatedAt'],
     group: 'Content Management',
+    description: 'Manage courses page sections.',
   },
   access: {
     read: () => true,
   },
   fields: [
+    {
+      name: 'order',
+      type: 'number',
+      required: false,
+      defaultValue: 0,
+      admin: {
+        hidden: true,
+      },
+    },
     {
       name: 'sectionName',
       type: 'text',

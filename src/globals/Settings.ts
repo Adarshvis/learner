@@ -1,4 +1,5 @@
 import type { GlobalConfig } from 'payload'
+import { colorPickerField } from '@innovixx/payload-color-picker-field'
 
 export const Settings: GlobalConfig = {
   slug: 'settings',
@@ -32,6 +33,24 @@ export const Settings: GlobalConfig = {
         {
           label: 'General',
           fields: [
+            {
+              name: 'homePage',
+              type: 'select',
+              label: 'Home Page',
+              defaultValue: 'home',
+              options: [
+                { label: '(home) Home', value: 'home' },
+                { label: '(about) About', value: 'about' },
+                { label: '(courses) Courses', value: 'courses' },
+                { label: '(instructors) Instructors', value: 'instructors' },
+                { label: '(news) News', value: 'news' },
+                { label: '(contact) Contact', value: 'contact' },
+                { label: '(enroll) Enroll', value: 'enroll' },
+              ],
+              admin: {
+                description: 'Select which page should be displayed as the home page',
+              },
+            },
             {
               name: 'useLogo',
               type: 'checkbox',
@@ -238,6 +257,216 @@ export const Settings: GlobalConfig = {
               admin: {
                 description: 'Show/hide Enroll page from website and navigation',
               },
+            },
+          ],
+        },
+        {
+          label: 'Theme & Styling',
+          description: 'Customize the look and feel of your website',
+          fields: [
+            {
+              name: 'theme',
+              type: 'group',
+              fields: [
+                colorPickerField({
+                  name: 'primaryColor',
+                  defaultValue: '#04415f',
+                  admin: {
+                    description: 'Primary brand color (nav, buttons)',
+                  },
+                }),
+                colorPickerField({
+                  name: 'secondaryColor',
+                  defaultValue: '#2086b8',
+                  admin: {
+                    description: 'Secondary color (hover states, links)',
+                  },
+                }),
+                colorPickerField({
+                  name: 'accentColor',
+                  defaultValue: '#011e2c',
+                  admin: {
+                    description: 'Accent color for headings',
+                  },
+                }),
+                colorPickerField({
+                  name: 'textColor',
+                  defaultValue: '#010608',
+                  admin: {
+                    description: 'Main text color',
+                  },
+                }),
+                colorPickerField({
+                  name: 'backgroundColor',
+                  defaultValue: '#f1f5f7',
+                  admin: {
+                    description: 'Page background color',
+                  },
+                }),
+              ],
+            },
+            {
+              name: 'typography',
+              type: 'group',
+              fields: [
+                {
+                  name: 'headingFont',
+                  type: 'select',
+                  defaultValue: 'Raleway',
+                  options: [
+                    { label: 'Raleway', value: 'Raleway' },
+                    { label: 'Roboto', value: 'Roboto' },
+                    { label: 'Ubuntu', value: 'Ubuntu' },
+                    { label: 'Open Sans', value: 'Open Sans' },
+                    { label: 'Poppins', value: 'Poppins' },
+                    { label: 'Montserrat', value: 'Montserrat' },
+                    { label: 'Lato', value: 'Lato' },
+                    { label: 'Inter', value: 'Inter' },
+                  ],
+                  admin: {
+                    description: 'Font family for headings',
+                  },
+                },
+                {
+                  name: 'bodyFont',
+                  type: 'select',
+                  defaultValue: 'Roboto',
+                  options: [
+                    { label: 'Roboto', value: 'Roboto' },
+                    { label: 'Open Sans', value: 'Open Sans' },
+                    { label: 'Lato', value: 'Lato' },
+                    { label: 'Ubuntu', value: 'Ubuntu' },
+                    { label: 'Poppins', value: 'Poppins' },
+                    { label: 'Inter', value: 'Inter' },
+                    { label: 'Nunito', value: 'Nunito' },
+                  ],
+                  admin: {
+                    description: 'Font family for body text',
+                  },
+                },
+                {
+                  name: 'baseFontSize',
+                  type: 'select',
+                  defaultValue: '16px',
+                  options: [
+                    { label: 'Small (14px)', value: '14px' },
+                    { label: 'Normal (16px)', value: '16px' },
+                    { label: 'Large (18px)', value: '18px' },
+                    { label: 'Extra Large (20px)', value: '20px' },
+                  ],
+                  admin: {
+                    description: 'Base font size for body text',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'headerStyle',
+              type: 'group',
+              fields: [
+                {
+                  name: 'headerType',
+                  type: 'select',
+                  defaultValue: 'sticky',
+                  options: [
+                    { label: 'Sticky (Always Visible)', value: 'sticky' },
+                    { label: 'Fixed (Transparent on Hero)', value: 'fixed-transparent' },
+                    { label: 'Static (Scrolls Away)', value: 'static' },
+                  ],
+                  admin: {
+                    description: 'Header behavior on scroll',
+                  },
+                },
+                {
+                  name: 'headerBackground',
+                  type: 'select',
+                  defaultValue: 'white',
+                  options: [
+                    { label: 'White', value: 'white' },
+                    { label: 'Light', value: 'light' },
+                    { label: 'Dark', value: 'dark' },
+                    { label: 'Primary Color', value: 'primary' },
+                    { label: 'Transparent', value: 'transparent' },
+                  ],
+                  admin: {
+                    description: 'Header background style',
+                  },
+                },
+                {
+                  name: 'headerShadow',
+                  type: 'checkbox',
+                  defaultValue: true,
+                  admin: {
+                    description: 'Show shadow under header',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'buttonStyle',
+              type: 'group',
+              fields: [
+                {
+                  name: 'borderRadius',
+                  type: 'select',
+                  defaultValue: 'rounded',
+                  options: [
+                    { label: 'Square', value: 'square' },
+                    { label: 'Slightly Rounded', value: 'slight' },
+                    { label: 'Rounded', value: 'rounded' },
+                    { label: 'Pill', value: 'pill' },
+                  ],
+                  admin: {
+                    description: 'Button corner style',
+                  },
+                },
+                {
+                  name: 'buttonSize',
+                  type: 'select',
+                  defaultValue: 'medium',
+                  options: [
+                    { label: 'Small', value: 'small' },
+                    { label: 'Medium', value: 'medium' },
+                    { label: 'Large', value: 'large' },
+                  ],
+                  admin: {
+                    description: 'Default button size',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'layoutSettings',
+              type: 'group',
+              fields: [
+                {
+                  name: 'containerWidth',
+                  type: 'select',
+                  defaultValue: 'default',
+                  options: [
+                    { label: 'Narrow (960px)', value: 'narrow' },
+                    { label: 'Default (1140px)', value: 'default' },
+                    { label: 'Wide (1320px)', value: 'wide' },
+                    { label: 'Full Width', value: 'full' },
+                  ],
+                  admin: {
+                    description: 'Maximum content width',
+                  },
+                },
+                {
+                  name: 'sectionSpacing',
+                  type: 'select',
+                  defaultValue: 'normal',
+                  options: [
+                    { label: 'Compact', value: 'compact' },
+                    { label: 'Normal', value: 'normal' },
+                    { label: 'Spacious', value: 'spacious' },
+                  ],
+                  admin: {
+                    description: 'Spacing between page sections',
+                  },
+                },
+              ],
             },
           ],
         },

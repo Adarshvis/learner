@@ -10,6 +10,10 @@ const formatSlug = (val: string): string => {
 
 export const WorkWithUs: CollectionConfig = {
   slug: 'work-with-us',
+  labels: {
+    singular: 'Work With Us',
+    plural: 'Work With Us',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'updatedAt'],

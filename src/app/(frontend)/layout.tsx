@@ -2,7 +2,7 @@ import React from 'react'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollHandler from './components/ScrollHandler'
-import { getSettings } from '@/lib/settings'
+import { getSettings, generateThemeCSS } from '@/lib/settings'
 
 export async function generateMetadata() {
   const settings = await getSettings()
@@ -22,8 +22,37 @@ export async function generateMetadata() {
   }
 }
 
+// Generate dynamic font imports based on settings
+function getFontImports(settings: any): string {
+  const fonts = new Set<string>()
+  
+  if (settings?.typography?.headingFont) {
+    fonts.add(settings.typography.headingFont)
+  }
+  if (settings?.typography?.bodyFont) {
+    fonts.add(settings.typography.bodyFont)
+  }
+  
+  // Default fonts
+  fonts.add('Roboto')
+  fonts.add('Raleway')
+  fonts.add('Ubuntu')
+  
+  const fontString = Array.from(fonts)
+    .map(font => font.replace(/ /g, '+'))
+    .map(font => `family=${font}:wght@300;400;500;600;700`)
+    .join('&')
+  
+  return `https://fonts.googleapis.com/css2?${fontString}&display=swap`
+}
+
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
+  const settings = await getSettings()
+  
+  // Generate theme CSS from settings
+  const themeCSS = generateThemeCSS(settings)
+  const fontUrl = getFontImports(settings)
 
   return (
     <html lang="en">
@@ -31,10 +60,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         {/* Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
-          rel="stylesheet"
-        />
+        <link href={fontUrl} rel="stylesheet" />
 
         {/* Vendor CSS Files */}
         <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
@@ -43,6 +69,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
         {/* Main CSS File - This contains the template styling */}
         <link href="/assets/css/main.css" rel="stylesheet" />
+        
+        {/* Dynamic Theme CSS from CMS */}
+        {themeCSS && <style dangerouslySetInnerHTML={{ __html: themeCSS }} />}
         
         {/* Prevent horizontal scroll for full-width hero */}
         <style>{`

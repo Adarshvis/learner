@@ -147,7 +147,7 @@ export default async function CMSContactPage() {
     )
   } catch (error) {
     // Return empty sections on error
-    return {
+    return (
       <div className="container py-5">
         <div className="text-center">
           <h2>Contact Us</h2>

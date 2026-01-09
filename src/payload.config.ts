@@ -6,7 +6,6 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users.ts'
 import { Media } from './collections/Media.ts'
-import { PageContent } from './collections/PageContent.ts'
 import { HomePage } from './collections/HomePage.ts'
 import { AboutPage } from './collections/AboutPage.ts'
 import { CoursesPage } from './collections/CoursesPage.ts'
@@ -18,8 +17,11 @@ import { WorkWithUs } from './collections/WorkWithUs.ts'
 import { BlogPosts } from './collections/BlogPosts.ts'
 import { ContactPage } from './collections/ContactPage.ts'
 import { EnrollPage } from './collections/EnrollPage.ts'
+import { Pages } from './collections/Pages.ts'
 import { Settings } from './globals/Settings.ts'
+import { Navigation } from './globals/Navigation.ts'
 import { blockBuilderPlugin } from './plugins/blockBuilder/index.ts'
+import { sectionReorderPlugin } from './plugins/sectionReorder/index.ts'
 
 export default buildConfig({
   admin: {
@@ -28,7 +30,7 @@ export default buildConfig({
   collections: [
     Users, 
     Media, 
-    PageContent, 
+    Pages,
     HomePage,
     AboutPage,
     CoursesPage,
@@ -40,7 +42,7 @@ export default buildConfig({
     BlogPosts,
     ContactPage,
   ],
-  globals: [Settings, EnrollPage],
+  globals: [Settings, Navigation, EnrollPage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -52,6 +54,16 @@ export default buildConfig({
   sharp,
   plugins: [
     // storage-adapter-placeholder
+    sectionReorderPlugin({
+      collections: [
+        'home-page',
+        'about-page',
+        'courses-page',
+        'instructors-page',
+        'news-page',
+        'contact-page',
+      ],
+    }),
     blockBuilderPlugin({
       // Add content blocks to all page collections
       collections: [

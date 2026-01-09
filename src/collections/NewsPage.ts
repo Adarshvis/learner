@@ -2,15 +2,29 @@ import type { CollectionConfig } from 'payload'
 
 export const NewsPage: CollectionConfig = {
   slug: 'news-page',
+  labels: {
+    singular: 'News Page',
+    plural: 'News Page',
+  },
   admin: {
     useAsTitle: 'sectionName',
     defaultColumns: ['sectionName', 'sectionType', 'status'],
     group: 'Content Management',
+    description: 'Manage news page sections.',
   },
   access: {
     read: () => true,
   },
   fields: [
+    {
+      name: 'order',
+      type: 'number',
+      required: false,
+      defaultValue: 0,
+      admin: {
+        hidden: true,
+      },
+    },
     {
       name: 'sectionName',
       type: 'text',
