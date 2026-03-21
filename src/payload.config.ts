@@ -107,6 +107,7 @@ export default buildConfig({
         customCode: true,
         map: true,
         people: true,
+        flexibleRow: true,
       },
     }),
   ],

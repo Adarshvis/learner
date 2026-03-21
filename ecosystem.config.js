@@ -8,10 +8,10 @@ module.exports = {
       instances: 1,
       autorestart: true,
       watch: false,
-      max_memory_restart: '1024M',
+      max_memory_restart: '900M',
       env: {
         NODE_ENV: 'production',
-        NODE_OPTIONS: '--no-deprecation --max-old-space-size=1200',
+        NODE_OPTIONS: '--no-deprecation --max-old-space-size=800',
         PORT: 3000,
       },
       // Restart strategy - avoid crash loops

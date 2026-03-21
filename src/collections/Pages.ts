@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { createFlexibleRowFields } from '../blocks/FlexibleRow'
 
 // Type for user with role field
 type UserWithRole = {
@@ -197,6 +198,8 @@ export const Pages: CollectionConfig = {
                   options: [
                     { label: 'Rich Text Block', value: 'richText' },
                     { label: 'Hero Section', value: 'hero' },
+                    { label: 'Flexible Row / Content Grid', value: 'flexibleRow' },
+                    { label: 'Slider Mixed Media', value: 'sliderMixedMedia' },
                     { label: 'Cards Grid', value: 'cards' },
                     { label: 'Image Gallery', value: 'gallery' },
                     { label: 'Call to Action', value: 'cta' },
@@ -257,6 +260,239 @@ export const Pages: CollectionConfig = {
                     { name: 'backgroundImage', type: 'upload', relationTo: 'media' },
                     { name: 'buttonText', type: 'text' },
                     { name: 'buttonLink', type: 'text' },
+                  ],
+                },
+                // Flexible Row / Content Grid
+                {
+                  name: 'flexibleRow',
+                  type: 'group',
+                  admin: {
+                    condition: (data, siblingData) => siblingData?.sectionType === 'flexibleRow',
+                  },
+                  fields: createFlexibleRowFields(),
+                },
+                // Slider Mixed Media Section
+                {
+                  name: 'sliderMixedMedia',
+                  type: 'group',
+                  admin: {
+                    condition: (data, siblingData) => siblingData?.sectionType === 'sliderMixedMedia',
+                  },
+                  fields: [
+                    {
+                      name: 'height',
+                      type: 'select',
+                      defaultValue: '70vh',
+                      options: [
+                        { label: 'Compact (50vh)', value: '50vh' },
+                        { label: 'Medium (60vh)', value: '60vh' },
+                        { label: 'Standard (70vh)', value: '70vh' },
+                        { label: 'Large (80vh)', value: '80vh' },
+                        { label: 'Extra Large (85vh)', value: '85vh' },
+                        { label: 'Very Large (90vh)', value: '90vh' },
+                        { label: 'Full Screen (100vh)', value: '100vh' },
+                      ],
+                      admin: {
+                        description: 'Height of the slider section',
+                      },
+                    },
+                    {
+                      name: 'interval',
+                      type: 'number',
+                      defaultValue: 5,
+                      admin: {
+                        description: 'Time between automatic slide transitions (seconds)',
+                      },
+                    },
+                    {
+                      name: 'slides',
+                      type: 'array',
+                      minRows: 1,
+                      fields: [
+                        {
+                          name: 'mediaType',
+                          type: 'select',
+                          required: true,
+                          options: [
+                            { label: 'Text Content', value: 'text' },
+                            { label: 'Image Media', value: 'image' },
+                            { label: 'Video Media', value: 'video' },
+                            { label: 'Audio Media', value: 'audio' },
+                            { label: 'Document Media', value: 'document' },
+                            { label: 'Animation Media', value: 'animation' },
+                            { label: '3D & Immersive', value: '3d' },
+                            { label: 'YouTube/Vimeo', value: 'embed' },
+                            { label: 'Data Visualization', value: 'data' },
+                            { label: 'Maps & Location', value: 'maps' },
+                          ],
+                        },
+                        {
+                          name: 'textContent',
+                          type: 'group',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'text',
+                          },
+                          fields: [
+                            { name: 'title', type: 'text' },
+                            { name: 'description', type: 'textarea' },
+                          ],
+                        },
+                        {
+                          name: 'imageFile',
+                          type: 'upload',
+                          relationTo: 'media',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'image',
+                          },
+                        },
+                        {
+                          name: 'imageAlt',
+                          type: 'text',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'image',
+                          },
+                        },
+                        {
+                          name: 'videoFile',
+                          type: 'upload',
+                          relationTo: 'media',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'video',
+                          },
+                        },
+                        {
+                          name: 'videoPoster',
+                          type: 'upload',
+                          relationTo: 'media',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'video',
+                          },
+                        },
+                        {
+                          name: 'videoAutoplay',
+                          type: 'checkbox',
+                          defaultValue: false,
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'video',
+                          },
+                        },
+                        {
+                          name: 'videoControls',
+                          type: 'checkbox',
+                          defaultValue: true,
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'video',
+                          },
+                        },
+                        {
+                          name: 'audioFile',
+                          type: 'upload',
+                          relationTo: 'media',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'audio',
+                          },
+                        },
+                        {
+                          name: 'audioAutoplay',
+                          type: 'checkbox',
+                          defaultValue: false,
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'audio',
+                          },
+                        },
+                        {
+                          name: 'documentFile',
+                          type: 'upload',
+                          relationTo: 'media',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'document',
+                          },
+                        },
+                        {
+                          name: 'documentDisplayMode',
+                          type: 'select',
+                          options: [
+                            { label: 'Download Button', value: 'download' },
+                            { label: 'Embedded Viewer', value: 'embed' },
+                          ],
+                          defaultValue: 'download',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'document',
+                          },
+                        },
+                        {
+                          name: 'animationFile',
+                          type: 'upload',
+                          relationTo: 'media',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'animation',
+                          },
+                        },
+                        {
+                          name: 'model3DFile',
+                          type: 'upload',
+                          relationTo: 'media',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === '3d',
+                          },
+                        },
+                        {
+                          name: 'embedType',
+                          type: 'select',
+                          options: [
+                            { label: 'YouTube', value: 'youtube' },
+                            { label: 'Vimeo', value: 'vimeo' },
+                            { label: 'Custom iFrame', value: 'iframe' },
+                          ],
+                          defaultValue: 'youtube',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'embed',
+                          },
+                        },
+                        {
+                          name: 'embedUrl',
+                          type: 'text',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'embed',
+                          },
+                        },
+                        {
+                          name: 'embedAutoplay',
+                          type: 'checkbox',
+                          defaultValue: false,
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'embed',
+                          },
+                        },
+                        {
+                          name: 'dataEmbedUrl',
+                          type: 'text',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'data',
+                          },
+                        },
+                        {
+                          name: 'mapEmbedUrl',
+                          type: 'text',
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'maps',
+                            description: 'Use Google Maps Embed URL (Share > Embed a map)',
+                          },
+                        },
+                        {
+                          name: 'mapInteractive',
+                          type: 'checkbox',
+                          defaultValue: true,
+                          admin: {
+                            condition: (data, siblingData) => siblingData?.mediaType === 'maps',
+                          },
+                        },
+                        {
+                          name: 'alt',
+                          type: 'text',
+                        },
+                      ],
+                    },
                   ],
                 },
                 // Cards Grid

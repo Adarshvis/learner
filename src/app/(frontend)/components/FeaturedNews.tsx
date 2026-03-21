@@ -1,7 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 
 interface NewsArticle {
   id: string
@@ -41,7 +40,7 @@ function formatDate(dateString: string): string {
 // Fetch news data from API
 async function getNewsForHome(): Promise<{ featured: NewsArticle | null; recent: NewsArticle[] }> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const data = await payload.find({
       collection: 'news' as 'media',
       where: {

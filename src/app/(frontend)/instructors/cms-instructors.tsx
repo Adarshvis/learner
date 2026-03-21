@@ -1,11 +1,10 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 
 export default async function CMSInstructorsPage({ isHomePage = false }: { isHomePage?: boolean } = {}) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     
     // Fetch instructors-page sections
     const instructorsPageSections = await payload.find({

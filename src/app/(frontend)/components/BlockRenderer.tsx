@@ -1,4 +1,5 @@
 import React from 'react'
+import FlexibleRowBlock from './blocks/FlexibleRowBlock'
 
 interface BlockRendererProps {
   blocks?: any[]
@@ -44,6 +45,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks }) => {
             return <MapBlock key={index} {...block} />
           case 'people':
             return <PeopleBlock key={index} {...block} />
+          case 'flexibleRow':
+            return <FlexibleRowBlock key={index} data={block} />
           default:
             console.warn('Unknown block type:', block.blockType)
             return <div className="alert alert-warning m-3">Unknown block type: {block.blockType}</div>

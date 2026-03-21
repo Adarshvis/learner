@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Token is required' }, { status: 400 })
     }
 
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
 
     // Find invitation by token
     const invitations = await payload.find({
@@ -76,7 +75,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
     }
 
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
 
     // Find invitation by token
     const invitations = await payload.find({

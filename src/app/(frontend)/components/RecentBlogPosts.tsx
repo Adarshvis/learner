@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getPayloadInstance } from '@/lib/payload'
 
 interface BlogPost {
   id: string;
@@ -30,7 +29,7 @@ interface BlogPost {
 
 async function getRecentPosts(): Promise<BlogPost[]> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const data = await payload.find({
       collection: 'blog-posts' as 'media',
       where: {
@@ -48,7 +47,7 @@ async function getRecentPosts(): Promise<BlogPost[]> {
 
 async function isBlogPageActive(): Promise<boolean> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const settings = await payload.findGlobal({
       slug: 'settings',
     })

@@ -8,5 +8,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
+    server: {
+      deps: {
+        // Payload admin dependencies import CSS (e.g. react-image-crop).
+        // Inline them so Vite transforms CSS instead of Node trying to load .css directly.
+        inline: [/react-image-crop/, /@payloadcms\//, /payload/],
+      },
+    },
   },
 })

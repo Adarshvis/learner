@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 import InstructorProfileClient from './InstructorProfileClient'
 
 // Use ISR - revalidate every 60 seconds for better performance
@@ -22,7 +21,7 @@ export default async function InstructorProfilePage({ params }: PageProps) {
   const { slug } = await params
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
 
     // Fetch instructors-page sections
     const instructorsPageSections = await payload.find({
@@ -68,7 +67,7 @@ export default async function InstructorProfilePage({ params }: PageProps) {
 // Generate static params for all instructors
 export async function generateStaticParams() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
 
     const instructorsPageSections = await payload.find({
       collection: 'instructors-page' as any,
@@ -104,7 +103,7 @@ export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
 
     const instructorsPageSections = await payload.find({
       collection: 'instructors-page' as any,

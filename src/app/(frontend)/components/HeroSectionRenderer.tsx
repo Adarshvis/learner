@@ -302,7 +302,12 @@ export function HeroSectionRenderer({ hero }: { hero: any }) {
               <div className="col-lg-6">
                 <div className="hero-image">
                   {hero.heroImages && hero.heroImages.length > 0 ? (
-                    <div id="heroCarousel" className="carousel slide main-image pointer-event" data-bs-ride="carousel">
+                    <div
+                      id="heroCarousel"
+                      className="carousel slide main-image pointer-event"
+                      data-bs-ride="carousel"
+                      data-bs-interval={hero.heroMediaInterval ? hero.heroMediaInterval * 1000 : 5000}
+                    >
                       <div className="carousel-indicators">
                         {hero.heroImages.map((_: any, index: number) => (
                           <button
@@ -319,11 +324,7 @@ export function HeroSectionRenderer({ hero }: { hero: any }) {
                       <div className="carousel-inner">
                         {hero.heroImages.map((item: any, index: number) => (
                           <div key={index} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
-                            <img
-                              src={typeof item.image === 'object' ? item.image.url : '/assets/img/education/courses-13.webp'}
-                              alt={item.alt || hero.title}
-                              className="d-block w-100"
-                            />
+                            {renderMixedSlideContent(item, index, '560px')}
                           </div>
                         ))}
                       </div>
@@ -557,4 +558,157 @@ function renderMediaItem(media: any) {
     default:
       return null
   }
+}
+
+function renderMixedSlideContent(slide: any, index: number, maxHeight: string) {
+  if (!slide) return null
+
+  const mediaType = slide.mediaType || (slide.image ? 'image' : undefined)
+
+  if (mediaType === 'text' && slide.textContent) {
+    return (
+      <div className="d-flex align-items-center justify-content-center" style={{ height: maxHeight, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+        <div className="text-center text-white px-4">
+          {slide.textContent.title && <h2 className="mb-3">{slide.textContent.title}</h2>}
+          {slide.textContent.description && <p className="mb-0">{slide.textContent.description}</p>}
+        </div>
+      </div>
+    )
+  }
+
+  if (mediaType === 'image' && (slide.image || slide.imageFile)) {
+    const imageSrc = typeof (slide.image || slide.imageFile) === 'object'
+      ? (slide.image || slide.imageFile).url
+      : (slide.image || slide.imageFile)
+
+    return (
+      <img
+        src={imageSrc || '/assets/img/education/courses-13.webp'}
+        alt={slide.imageAlt || slide.alt || `Slide ${index + 1}`}
+        style={{ width: '100%', maxHeight, objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+      />
+    )
+  }
+
+  if (mediaType === 'video' && slide.videoFile) {
+    return (
+      <video
+        src={typeof slide.videoFile === 'object' ? slide.videoFile.url : slide.videoFile}
+        poster={slide.videoPoster && typeof slide.videoPoster === 'object' ? slide.videoPoster.url : slide.videoPoster}
+        autoPlay={slide.videoAutoplay}
+        controls={slide.videoControls !== false}
+        muted
+        loop
+        style={{ width: '100%', maxHeight, objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+      />
+    )
+  }
+
+  if (mediaType === 'audio' && slide.audioFile) {
+    return (
+      <div className="d-flex align-items-center justify-content-center" style={{ height: maxHeight, background: '#f8f9fa' }}>
+        <audio
+          src={typeof slide.audioFile === 'object' ? slide.audioFile.url : slide.audioFile}
+          controls
+          autoPlay={slide.audioAutoplay}
+          className="w-75"
+        />
+      </div>
+    )
+  }
+
+  if (mediaType === 'document' && slide.documentFile) {
+    return (
+      <div className="d-flex align-items-center justify-content-center" style={{ height: maxHeight, background: '#ffffff' }}>
+        {slide.documentDisplayMode === 'embed' ? (
+          <iframe
+            src={typeof slide.documentFile === 'object' ? slide.documentFile.url : slide.documentFile}
+            className="w-100"
+            style={{ height: '100%' }}
+            title={slide.alt || 'Document'}
+          />
+        ) : (
+          <a href={typeof slide.documentFile === 'object' ? slide.documentFile.url : slide.documentFile} download className="btn btn-primary btn-lg">
+            Download Document
+          </a>
+        )}
+      </div>
+    )
+  }
+
+  if (mediaType === 'animation' && slide.animationFile) {
+    return (
+      <img
+        src={typeof slide.animationFile === 'object' ? slide.animationFile.url : slide.animationFile}
+        alt={slide.alt || 'Animation'}
+        style={{ width: '100%', maxHeight, objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+      />
+    )
+  }
+
+  if (mediaType === '3d' && slide.model3DFile) {
+    return (
+      <div className="d-flex align-items-center justify-content-center" style={{ height: maxHeight, background: '#1a1a1a' }}>
+        <div className="text-center text-white">
+          <i className="bi bi-box" style={{ fontSize: '5rem' }}></i>
+          <p className="mt-3">3D Model Viewer</p>
+          <small>{slide.alt || '3D Model'}</small>
+        </div>
+      </div>
+    )
+  }
+
+  if (mediaType === 'embed' && slide.embedUrl) {
+    return (
+      <div style={{ width: '100%', height: maxHeight, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
+        {slide.embedType === 'youtube' && (
+          <iframe
+            src={`https://www.youtube.com/embed/${extractYouTubeId(slide.embedUrl)}?autoplay=${slide.embedAutoplay ? 1 : 0}&mute=1&rel=0&modestbranding=1`}
+            title={slide.alt || 'YouTube video'}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          ></iframe>
+        )}
+        {slide.embedType === 'vimeo' && (
+          <iframe
+            src={`https://player.vimeo.com/video/${extractVimeoId(slide.embedUrl)}?autoplay=${slide.embedAutoplay ? 1 : 0}`}
+            title={slide.alt || 'Vimeo video'}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          ></iframe>
+        )}
+        {slide.embedType === 'iframe' && (
+          <div
+            dangerouslySetInnerHTML={{ __html: slide.embedUrl }}
+            style={{ width: '100%', height: '100%' }}
+          />
+        )}
+      </div>
+    )
+  }
+
+  if (mediaType === 'data' && slide.dataEmbedUrl) {
+    return (
+      <iframe
+        src={slide.dataEmbedUrl}
+        style={{ width: '100%', height: maxHeight, border: 'none' }}
+        title={slide.alt || 'Data visualization'}
+      />
+    )
+  }
+
+  if (mediaType === 'maps' && slide.mapEmbedUrl) {
+    return (
+      <iframe
+        src={convertToGoogleMapsEmbed(slide.mapEmbedUrl)}
+        style={{ width: '100%', height: maxHeight, border: 'none' }}
+        title={slide.alt || 'Map'}
+        allowFullScreen={slide.mapInteractive !== false}
+      />
+    )
+  }
+
+  return null
 }

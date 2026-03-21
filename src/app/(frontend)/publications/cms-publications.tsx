@@ -1,12 +1,11 @@
 import * as React from 'react'
 import Link from 'next/link'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 import PublicationsClient from './PublicationsClient.tsx'
 
 export default async function CMSPublicationsPage() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     
     // Fetch publications with reasonable limit (pagination handled client-side)
     const publicationsData = await payload.find({
@@ -22,14 +21,14 @@ export default async function CMSPublicationsPage() {
     const publications = publicationsData.docs || []
     
     // Extract unique values for filters (dynamic from data)
-    const uniqueYears = [...new Set(publications.map((p: any) => p.year))].sort((a: any, b: any) => b - a)
-    const uniqueTypes = [...new Set(publications.map((p: any) => p.type))]
+    const uniqueYears = [...new Set(publications.map((p: any) => p.year))] as number[]
+    const uniqueTypes = [...new Set(publications.map((p: any) => p.type))] as string[]
     const uniqueAuthors = [...new Set(publications.flatMap((p: any) => 
       p.authors?.filter((a: any) => a.isLabMember).map((a: any) => a.name) || []
-    ))].sort()
+    ))] as string[]
     const uniqueKeywords = [...new Set(publications.flatMap((p: any) => 
       p.keywords?.map((k: any) => k.keyword) || []
-    ))].sort()
+    ))] as string[]
 
     return (
       <>

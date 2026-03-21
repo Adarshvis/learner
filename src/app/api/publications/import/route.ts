@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 
 // API endpoint to import publications from external sources
 // POST /api/publications/import
@@ -8,7 +7,14 @@ import config from '@payload-config'
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
+
+    // Verify authentication
+    const { user } = await payload.auth({ headers: request.headers })
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const body = await request.json()
     
     const { source, authorId, query, apiKey } = body
@@ -67,6 +73,7 @@ export async function POST(request: NextRequest) {
         // Create new publication
         await payload.create({
           collection: 'publications' as any,
+          overrideAccess: true,
           data: {
             title: pub.title,
             publisher: pub.publisher || 'Unknown',
@@ -134,43 +141,106 @@ async function importFromGoogleScholar(authorId: string, apiKey: string): Promis
 }
 
 // ORCID import (free API)
+// The /works summary endpoint does NOT include contributors/keywords.
+// We must fetch each work individually via /work/{put-code} to get authors.
 async function importFromOrcid(orcidId: string): Promise<any[]> {
   if (!orcidId) {
     throw new Error('ORCID ID is required')
   }
 
-  const response = await fetch(
+  // Step 1: Get list of works (summaries only)
+  const listResponse = await fetch(
     `https://pub.orcid.org/v3.0/${orcidId}/works`,
-    {
-      headers: {
-        'Accept': 'application/json',
-      },
-    }
+    { headers: { 'Accept': 'application/json' } }
   )
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch from ORCID')
+  if (!listResponse.ok) {
+    throw new Error('Failed to fetch works list from ORCID')
   }
 
-  const data = await response.json()
-  const works = data.group || []
+  const listData = await listResponse.json()
+  const groups = listData.group || []
 
-  return works.map((work: any) => {
-    const summary = work['work-summary']?.[0] || {}
-    const title = summary.title?.title?.value || 'Untitled'
-    const year = summary['publication-date']?.year?.value || new Date().getFullYear()
-    const doi = summary['external-ids']?.['external-id']?.find((id: any) => id['external-id-type'] === 'doi')?.['external-id-value']
-    
-    return {
-      title,
-      publisher: summary['journal-title']?.value || 'Unknown',
-      year: parseInt(year),
-      type: mapOrcidWorkType(summary.type),
-      doi,
-      link: doi ? `https://doi.org/${doi}` : summary.url?.value,
-      externalId: `orcid-${summary['put-code']}`,
+  // Collect put-codes from summaries
+  const putCodes: number[] = groups
+    .map((g: any) => g['work-summary']?.[0]?.['put-code'])
+    .filter(Boolean)
+
+  if (putCodes.length === 0) return []
+
+  // Step 2: Fetch full work details in batches (ORCID supports comma-separated put-codes)
+  const batchSize = 50
+  const publications: any[] = []
+
+  for (let i = 0; i < putCodes.length; i += batchSize) {
+    const batch = putCodes.slice(i, i + batchSize)
+    const batchUrl = `https://pub.orcid.org/v3.0/${orcidId}/works/${batch.join(',')}`
+    const detailResponse = await fetch(batchUrl, {
+      headers: { 'Accept': 'application/json' },
+    })
+
+    if (!detailResponse.ok) continue
+
+    const detailData = await detailResponse.json()
+    const bulkWorks = detailData.bulk || []
+
+    for (const entry of bulkWorks) {
+      const work = entry.work
+      if (!work) continue
+
+      const title = work.title?.title?.value || 'Untitled'
+      const year = work['publication-date']?.year?.value || new Date().getFullYear()
+      const doi = work['external-ids']?.['external-id']
+        ?.find((id: any) => id['external-id-type'] === 'doi')?.['external-id-value']
+
+      // Extract authors from contributors
+      const contributors = work.contributors?.contributor || []
+      const authors = contributors
+        .map((c: any) => c['credit-name']?.value)
+        .filter(Boolean)
+      if (authors.length === 0) authors.push(orcidId)
+
+      // Extract keywords from citation if available (ORCID doesn't have per-work keywords,
+      // but the short-description or subjects may be present)
+      const keywords: string[] = []
+      const subtitle = work.title?.subtitle?.value
+      if (subtitle) keywords.push(subtitle)
+
+      publications.push({
+        title,
+        publisher: work['journal-title']?.value || 'Unknown',
+        authors,
+        keywords,
+        year: parseInt(year),
+        type: mapOrcidWorkType(work.type),
+        doi,
+        link: doi ? `https://doi.org/${doi}` : work.url?.value,
+        externalId: `orcid-${work['put-code']}`,
+      })
     }
-  })
+  }
+
+  // Step 3: Enrich with keywords from CrossRef for publications with DOIs
+  for (const pub of publications) {
+    if (!pub.doi || pub.keywords.length > 0) continue
+    try {
+      const crRes = await fetch(
+        `https://api.crossref.org/works/${encodeURIComponent(pub.doi)}`,
+        { headers: { 'User-Agent': 'CPS-Lab-Website/1.0 (mailto:admin@example.com)' } }
+      )
+      if (crRes.ok) {
+        const crData = await crRes.json()
+        const subjects: string[] = crData.message?.subject || []
+        if (subjects.length > 0) {
+          pub.keywords = subjects
+        }
+      }
+    } catch {
+      // Skip enrichment on failure
+    }
+  }
+
+  return publications
 }
 
 // CrossRef import (free API)

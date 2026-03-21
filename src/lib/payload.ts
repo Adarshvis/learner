@@ -1,12 +1,12 @@
 import { getPayload } from 'payload'
-import config from '../payload.config'
+import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
 
 // Initialize payload instance with singleton pattern
 let payloadInstance: any = null
 let payloadPromise: Promise<any> | null = null
 
-async function getPayloadInstance() {
+export async function getPayloadInstance() {
   if (payloadInstance) {
     return payloadInstance
   }

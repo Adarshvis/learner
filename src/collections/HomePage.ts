@@ -150,27 +150,202 @@ export const HomePage: CollectionConfig = {
           },
         },
         {
+          name: 'heroMediaInterval',
+          type: 'number',
+          label: 'Hero Media Interval (seconds)',
+          defaultValue: 5,
+          admin: {
+            description: 'Time between automatic media transitions in 50/50 layout',
+            condition: (data, siblingData) => siblingData?.layoutType === 'text-slider',
+          },
+        },
+        {
           name: 'heroImages',
           type: 'array',
-          label: 'Hero Images (Carousel)',
+          label: 'Hero Media (Carousel)',
           minRows: 1,
           admin: {
-            description: 'Add multiple images for a carousel/slider effect',
+            description: 'Add mixed media slides for the right side of the 50/50 hero layout',
             condition: (data, siblingData) => siblingData?.layoutType === 'text-slider',
           },
           fields: [
+            {
+              name: 'mediaType',
+              type: 'select',
+              defaultValue: 'image',
+              options: [
+                { label: 'Text Content', value: 'text' },
+                { label: 'Image Media', value: 'image' },
+                { label: 'Video Media', value: 'video' },
+                { label: 'Audio Media', value: 'audio' },
+                { label: 'Document Media', value: 'document' },
+                { label: 'Animation Media', value: 'animation' },
+                { label: '3D and Immersive', value: '3d' },
+                { label: 'YouTube/Vimeo', value: 'embed' },
+                { label: 'Data Visualization', value: 'data' },
+                { label: 'Maps and Location', value: 'maps' },
+              ],
+            },
+            {
+              name: 'textContent',
+              type: 'group',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'text',
+              },
+              fields: [
+                { name: 'title', type: 'text' },
+                { name: 'description', type: 'textarea' },
+              ],
+            },
             {
               name: 'image',
               type: 'upload',
               relationTo: 'media',
               required: true,
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'image',
+              },
             },
             {
               name: 'alt',
               type: 'text',
               label: 'Alt Text',
               admin: {
-                description: 'Alternative text for the image',
+                condition: (data, siblingData) => siblingData?.mediaType === 'image',
+              },
+            },
+            {
+              name: 'videoFile',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'video',
+              },
+            },
+            {
+              name: 'videoPoster',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'video',
+              },
+            },
+            {
+              name: 'videoAutoplay',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'video',
+              },
+            },
+            {
+              name: 'videoControls',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'video',
+              },
+            },
+            {
+              name: 'audioFile',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'audio',
+              },
+            },
+            {
+              name: 'audioAutoplay',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'audio',
+              },
+            },
+            {
+              name: 'documentFile',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'document',
+              },
+            },
+            {
+              name: 'documentDisplayMode',
+              type: 'select',
+              options: [
+                { label: 'Download Button', value: 'download' },
+                { label: 'Embedded Viewer', value: 'embed' },
+              ],
+              defaultValue: 'download',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'document',
+              },
+            },
+            {
+              name: 'animationFile',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'animation',
+              },
+            },
+            {
+              name: 'model3DFile',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === '3d',
+              },
+            },
+            {
+              name: 'embedType',
+              type: 'select',
+              options: [
+                { label: 'YouTube', value: 'youtube' },
+                { label: 'Vimeo', value: 'vimeo' },
+                { label: 'Custom iFrame', value: 'iframe' },
+              ],
+              defaultValue: 'youtube',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'embed',
+              },
+            },
+            {
+              name: 'embedUrl',
+              type: 'text',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'embed',
+              },
+            },
+            {
+              name: 'embedAutoplay',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'embed',
+              },
+            },
+            {
+              name: 'dataEmbedUrl',
+              type: 'text',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'data',
+              },
+            },
+            {
+              name: 'mapEmbedUrl',
+              type: 'text',
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'maps',
+              },
+            },
+            {
+              name: 'mapInteractive',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                condition: (data, siblingData) => siblingData?.mediaType === 'maps',
               },
             },
           ],

@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { HeroSectionRenderer } from './HeroSectionRenderer'
+import FlexibleRowBlock from './blocks/FlexibleRowBlock'
 
 interface PageSection {
   id?: string
@@ -13,6 +15,20 @@ interface PageSection {
     backgroundImage?: { url: string } | string
     buttonText?: string
     buttonLink?: string
+  }
+  sliderMixedMedia?: {
+    height?: string
+    interval?: number
+    slides?: Array<any>
+  }
+  flexibleRow?: {
+    heading?: string
+    description?: string
+    alignment?: 'left' | 'center' | 'right'
+    sectionBackgroundColor?: string
+    columnGap?: 'none' | 'small' | 'medium' | 'large' | 'xl'
+    verticalAlign?: 'top' | 'center' | 'bottom' | 'stretch'
+    columns?: Array<any>
   }
   cards?: Array<{
     title: string
@@ -274,6 +290,20 @@ const HeroSection = ({ section }: { section: PageSection }) => {
   )
 }
 
+const SliderMixedMediaSection = ({ section }: { section: PageSection }) => {
+  const slider = section.sliderMixedMedia
+  if (!slider || !slider.slides?.length) return null
+
+  return (
+    <HeroSectionRenderer
+      hero={{
+        layoutType: 'slider-fullwidth',
+        fullWidthSlider: slider,
+      }}
+    />
+  )
+}
+
 const CardsSection = ({ section }: { section: PageSection }) => {
   if (!section.cards?.length) return null
   
@@ -370,7 +400,33 @@ const CTASection = ({ section }: { section: PageSection }) => {
 }
 
 const FAQSection = ({ section }: { section: PageSection }) => {
-  if (!section.faqItems?.length) return null
+  const rawFaqItems: any[] = Array.isArray((section as any).faqItems)
+    ? (section as any).faqItems
+    : Array.isArray((section as any).faq?.items)
+      ? (section as any).faq.items
+      : Array.isArray((section as any).faqContent?.items)
+        ? (section as any).faqContent.items
+        : []
+
+  const normalizedFaqItems = rawFaqItems
+    .map((item: any, index: number) => ({
+      question:
+        item?.question ||
+        item?.title ||
+        item?.q ||
+        item?.heading ||
+        `Question ${index + 1}`,
+      answer:
+        item?.answer ||
+        item?.content ||
+        item?.a ||
+        item?.description ||
+        '',
+    }))
+    .filter((item: any) => item.question || item.answer)
+
+  const hasFaqMeta = Boolean(section.sectionTitle || section.sectionSubtitle)
+  if (!normalizedFaqItems.length && !hasFaqMeta) return null
   
   return (
     <section className={`faq-section section ${getBgClass(section.backgroundColor)}`}>
@@ -384,7 +440,7 @@ const FAQSection = ({ section }: { section: PageSection }) => {
         <div className="row justify-content-center">
           <div className="col-lg-8">
             <div className="accordion" id="faqAccordion">
-              {section.faqItems.map((item, index) => (
+              {normalizedFaqItems.map((item: any, index: number) => (
                 <div key={index} className="accordion-item">
                   <h2 className="accordion-header">
                     <button 
@@ -405,6 +461,9 @@ const FAQSection = ({ section }: { section: PageSection }) => {
                   </div>
                 </div>
               ))}
+              {normalizedFaqItems.length === 0 && (
+                <div className="alert alert-info mb-0">No FAQ items added yet.</div>
+              )}
             </div>
           </div>
         </div>
@@ -770,6 +829,10 @@ const renderSection = (section: PageSection, index: number) => {
       )
     case 'hero':
       return <HeroSection key={index} section={section} />
+    case 'flexibleRow':
+      return <FlexibleRowBlock key={index} data={(section as any).flexibleRow || (section as any)} />
+    case 'sliderMixedMedia':
+      return <SliderMixedMediaSection key={index} section={section} />
     case 'cards':
       return <CardsSection key={index} section={section} />
     case 'gallery':
@@ -777,6 +840,10 @@ const renderSection = (section: PageSection, index: number) => {
     case 'cta':
       return <CTASection key={index} section={section} />
     case 'faq':
+    case 'faqAccordion':
+    case 'faq-accordion':
+    case 'FAQ Accordion':
+    case 'faqaccordion':
       return <FAQSection key={index} section={section} />
     case 'testimonials':
       return <TestimonialsSection key={index} section={section} />
@@ -799,6 +866,13 @@ const renderSection = (section: PageSection, index: number) => {
     case 'spacer':
       return <SpacerSection key={index} section={section} />
     default:
+      if (
+        Array.isArray((section as any).faqItems) ||
+        Array.isArray((section as any).faq?.items) ||
+        Array.isArray((section as any).faqContent?.items)
+      ) {
+        return <FAQSection key={index} section={section} />
+      }
       return null
   }
 }
@@ -808,33 +882,35 @@ export default function DynamicPageRenderer({ page }: DynamicPageRendererProps) 
     <>
       {/* Page Title Section */}
       {page.showPageTitle !== false && (
-        <div className="page-title">
-          <div className="heading">
-            <div className="container">
-              <div className="row d-flex justify-content-center text-center">
-                <div className="col-lg-8">
-                  <h1>{page.title}</h1>
-                  {page.breadcrumbs?.length ? (
-                    <p className="mb-0">
-                      {page.breadcrumbs.map((crumb, index) => (
-                        <span key={index}>
-                          {crumb.link ? (
-                            <Link href={crumb.link}>{crumb.label}</Link>
-                          ) : (
-                            <span className="active">{crumb.label}</span>
-                          )}
-                          {index < page.breadcrumbs!.length - 1 && ' / '}
-                        </span>
-                      ))}
-                    </p>
-                  ) : (
-                    <p className="mb-0">
-                      <Link href="/">Home</Link> / <span className="active">{page.title}</span>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+        <div className="page-title light-background">
+          <div className="container d-lg-flex justify-content-between align-items-center">
+            <h1 className="mb-2 mb-lg-0">{page.title}</h1>
+            <nav className="breadcrumbs">
+              <ol>
+                {page.breadcrumbs?.length ? (
+                  page.breadcrumbs.map((crumb, index) => {
+                    const isLast = index === page.breadcrumbs!.length - 1
+
+                    return (
+                      <li key={index} className={isLast ? 'current' : undefined}>
+                        {isLast || !crumb.link ? (
+                          crumb.label
+                        ) : (
+                          <Link href={crumb.link}>{crumb.label}</Link>
+                        )}
+                      </li>
+                    )
+                  })
+                ) : (
+                  <>
+                    <li>
+                      <Link href="/">Home</Link>
+                    </li>
+                    <li className="current">{page.title}</li>
+                  </>
+                )}
+              </ol>
+            </nav>
           </div>
         </div>
       )}

@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 import { Metadata } from 'next'
 import DynamicPageRenderer from '@/app/(frontend)/components/DynamicPageRenderer'
 
@@ -14,7 +13,7 @@ interface PageProps {
 // Generate static params for all published pages
 export async function generateStaticParams() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const pages = await payload.find({
       collection: 'pages' as any,
       where: {
@@ -37,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const pages = await payload.find({
       collection: 'pages' as any,
       where: {
@@ -80,7 +79,7 @@ export default async function DynamicPage({ params }: PageProps) {
   }
   
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const pages = await payload.find({
       collection: 'pages' as any,
       where: {

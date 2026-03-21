@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
+import { getPayloadInstance } from '@/lib/payload'
 
 // Use ISR - revalidate every 60 seconds for better performance
 export const revalidate = 60
@@ -12,7 +11,7 @@ interface ApplyNowSettings {
 
 export default async function EnrollPage() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const applyNow = await payload.findGlobal({
       slug: 'apply-now' as 'settings',
     }) as unknown as ApplyNowSettings

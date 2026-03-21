@@ -33,6 +33,7 @@ export const blockBuilderPlugin = (options?: {
     customCode?: boolean
     map?: boolean
     people?: boolean
+    flexibleRow?: boolean
   }
 }): Plugin => {
   return (incomingConfig: Config): Config => {

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 
 export async function GET() {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const navigation = await payload.findGlobal({
       slug: 'navigation' as any,
       depth: 2,

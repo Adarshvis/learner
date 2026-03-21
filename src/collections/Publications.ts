@@ -19,6 +19,9 @@ export const Publications: CollectionConfig = {
     defaultColumns: ['title', 'publisher', 'year', 'type', 'createdBy', 'updatedAt'],
     group: 'Content Management',
     description: 'Manage lab publications - journal articles, conference papers, book chapters, etc.',
+    components: {
+      beforeListTable: ['@/components/admin/PublicationImportButton'],
+    },
     hidden: ({ user }) => {
       const u = user as UserWithRole | null
       if (!u) return true

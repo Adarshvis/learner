@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { getPayloadInstance } from '@/lib/payload'
 
 // Use ISR - revalidate every 60 seconds for better performance
 export const revalidate = 60
@@ -16,7 +15,7 @@ interface ResearchDomainData {
 
 async function getResearchDomain(slug: string): Promise<ResearchDomainData | null> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const data = await payload.find({
       collection: 'research-domains' as 'media',
       where: {

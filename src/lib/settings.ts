@@ -1,11 +1,10 @@
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
+import { getPayloadInstance } from './payload'
 
 // Cache settings for 5 minutes in production (300 seconds)
 const getCachedSettings = unstable_cache(
   async () => {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const settings = await payload.findGlobal({
       slug: 'settings',
       depth: 1, // Reduced depth for faster queries
@@ -22,7 +21,7 @@ export async function getSettings() {
     if (process.env.NODE_ENV === 'production') {
       return await getCachedSettings()
     }
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const settings = await payload.findGlobal({
       slug: 'settings',
       depth: 1,
@@ -37,7 +36,7 @@ export async function getSettings() {
 // Cache navigation for 5 minutes in production (300 seconds)
 const getCachedNavigation = unstable_cache(
   async () => {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const navigation = await payload.findGlobal({
       slug: 'navigation' as 'settings',
       depth: 1,
@@ -53,7 +52,7 @@ export async function getNavigation() {
     if (process.env.NODE_ENV === 'production') {
       return await getCachedNavigation()
     }
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const navigation = await payload.findGlobal({
       slug: 'navigation' as 'settings',
       depth: 1,
@@ -67,7 +66,7 @@ export async function getNavigation() {
 
 export async function getPageBySlug(slug: string) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadInstance()
     const pages = await payload.find({
       collection: 'pages' as 'media',
       where: {
